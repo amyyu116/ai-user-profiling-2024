@@ -18,6 +18,9 @@ block content
       .field
         label(for='bio') Bio
         textarea(rows='2', name='bio', id='bio')=user.profile.bio
+      .field
+        label(for='topics') Interests
+        textarea(rows='2', name='topics', id='topics')=user.profile.topics
       .field.image-upload
         p(style="font-weight: bold; font-size: medium; margin-bottom: 0.2em") Profile Picture 
           span(style="font-weight: normal") (Click to Change)

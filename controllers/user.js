@@ -92,7 +92,7 @@ exports.getSignup = (req, res) => {
  * POST /signup
  * Handles user sign up and creation of a new account.
  */
-exports.postSignup = async(req, res, next) => {
+exports.postSignup = async (req, res, next) => {
     const validationErrors = [];
     if (!validator.isEmail(req.body.email)) validationErrors.push({ msg: 'Please enter a valid email address.' });
     if (!validator.isLength(req.body.password, { min: 4 })) validationErrors.push({ msg: 'Password must be at least 4 characters long.' });
@@ -148,7 +148,7 @@ exports.postSignup = async(req, res, next) => {
  * POST /account/profile
  * Update user's profile information during the sign up process.
  */
-exports.postSignupInfo = async(req, res, next) => {
+exports.postSignupInfo = async (req, res, next) => {
     try {
         const user = await User.findById(req.user.id).exec();
         user.profile.name = req.body.name.trim() || '';
@@ -157,7 +157,7 @@ exports.postSignupInfo = async(req, res, next) => {
         if (req.file) {
             user.profile.picture = req.file.filename;
         }
-
+        user.profile.topics = req.body.topics.trim() || '';
         await user.save();
         req.flash('success', { msg: 'Profile information has been updated.' });
         return res.redirect('/com');
@@ -170,7 +170,7 @@ exports.postSignupInfo = async(req, res, next) => {
  * POST /account/consent
  * Update user's consent.
  */
-exports.postConsent = async(req, res, next) => {
+exports.postConsent = async (req, res, next) => {
     try {
         const user = await User.findById(req.user.id).exec();
         user.consent = true;
@@ -196,7 +196,7 @@ exports.getAccount = (req, res) => {
  * GET /me
  * Render user's profile page.
  */
-exports.getMe = async(req, res) => {
+exports.getMe = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).populate('posts.comments.actor').exec();
         const allPosts = user.getPosts();
@@ -210,7 +210,7 @@ exports.getMe = async(req, res) => {
  * POST /account/profile
  * Update user's profile information.
  */
-exports.postUpdateProfile = async(req, res, next) => {
+exports.postUpdateProfile = async (req, res, next) => {
     const validationErrors = [];
     if (!validator.isEmail(req.body.email)) validationErrors.push({ msg: 'Please enter a valid email address.' });
     if (validationErrors.length) {
@@ -244,7 +244,7 @@ exports.postUpdateProfile = async(req, res, next) => {
  * POST /account/password
  * Update user's current password.
  */
-exports.postUpdatePassword = async(req, res, next) => {
+exports.postUpdatePassword = async (req, res, next) => {
     const validationErrors = [];
     if (!validator.isLength(req.body.password, { min: 4 })) validationErrors.push({ msg: 'Password must be at least 4 characters long.' });
     if (validator.escape(req.body.password) !== validator.escape(req.body.confirmPassword)) validationErrors.push({ msg: 'Passwords do not match.' });
@@ -268,7 +268,7 @@ exports.postUpdatePassword = async(req, res, next) => {
  * POST /pageLog
  * Record user's page visit to pageLog.
  */
-exports.postPageLog = async(req, res, next) => {
+exports.postPageLog = async (req, res, next) => {
     try {
         const user = await User.findById(req.user.id).exec();
         user.logPage(Date.now(), req.body.path);
@@ -283,7 +283,7 @@ exports.postPageLog = async(req, res, next) => {
  * POST /pageTimes
  * Record user's time on site to pageTimes.
  */
-exports.postPageTime = async(req, res, next) => {
+exports.postPageTime = async (req, res, next) => {
     try {
         const user = await User.findById(req.user.id).exec();
         // What day in the study is the user in? 
@@ -316,7 +316,7 @@ exports.getForgot = (req, res) => {
 /**
  * Deactivate accounts who are completed with the study, except for admin accounts. Called 3 times a day. Scheduled via CRON jobs in app.js
  */
-exports.stillActive = async() => {
+exports.stillActive = async () => {
     try {
         const activeUsers = await User.find().where('active').equals(true).exec();
         for (const user of activeUsers) {
@@ -337,7 +337,7 @@ exports.stillActive = async() => {
  * GET /completed
  * Render Admin Dashboard: Basic information on users currrently in the study
  */
-exports.userTestResults = async(req, res) => {
+exports.userTestResults = async (req, res) => {
     if (!req.user.isAdmin) {
         res.redirect('/');
     } else {
