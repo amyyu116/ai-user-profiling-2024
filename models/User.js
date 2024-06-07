@@ -130,7 +130,7 @@ const userSchema = new mongoose.Schema({
         location: String,
         bio: String,
         picture: String,
-        topics: String,
+        topics: Array,
     }
 }, { timestamps: true, versionKey: false });
 

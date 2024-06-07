@@ -1,4 +1,9 @@
-$(window).on("load", function() {
+
+$(window).on("load", function () {
+    function tagsToText(tags) {
+
+    }
+
     function isPasswordFilled() {
         let isFilled = true;
         // Check passwords match and password is longer than 4
@@ -29,13 +34,17 @@ $(window).on("load", function() {
     function enableSaveBtn() {
         let isFilled = true;
         // Check Username and MTurkID is not blank
-        $('input[type="text"]').each(function(index) {
-                if ($(this).val().trim().length === 0) {
-                    isFilled = false;
-                    return false;
-                }
-            })
-            // Check email is valid
+        $('input[type="text"]').each(function (index) {
+            if ($(this).val().trim().length === 0) {
+                isFilled = false;
+                return false;
+            }
+        })
+
+        if ($('.tags-container .tag-item').length === 0) {
+            isFilled = false;
+        }
+        // Check email is valid
         if ($('input[type="email"]').is(":invalid")) {
             isFilled = false;
         }
@@ -52,18 +61,18 @@ $(window).on("load", function() {
     };
 
     // Sign Up FORM Button: Form validation to make Sign Up button green
-    $('form[id="signup-form"] input[required]').on('input', function() {
+    $('form[id="signup-form"] input[required]').on('input', function () {
         enableSaveBtn();
     });
-    $('form[id="signup-form"] input[type="checkbox"]').on('change', function() {
+    $('form[id="signup-form"] input[type="checkbox"]').on('change', function () {
         enableSaveBtn();
     });
 
     // Update Profile and Password FORM: Form validation
-    $('form[id="profile"] input').on('input', function() {
+    $('form[id="profile"] input').on('input', function () {
         $('form[id="profile"] button').removeClass('disabled').addClass('green');
     });
-    $('form[id="password"] input').on('input', function() {
+    $('form[id="password"] input').on('input', function () {
         $('form[id="password"] button').removeClass('disabled');
 
         if (isPasswordFilled()) {
@@ -73,3 +82,4 @@ $(window).on("load", function() {
         }
     });
 });
+

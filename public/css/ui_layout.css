@@ -3,6 +3,9 @@ body {
     padding: 0em;
 }
 
+span #tag-item {
+    background-color: red !important;
+}
 
 /*Page Container*/
 
@@ -46,6 +49,9 @@ button,
     font-size: 1.05em;
 }
 
+.tags-container {
+    background-color: red !important;
+}
 
 /* Image Upload*/
 

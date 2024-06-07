@@ -10,7 +10,7 @@ const scriptSchema = new mongoose.Schema({
     time: Number, // Indicates when the post was created relative to how much time has passed since the user created their account, in milliseconds
 
     class: String, // For experimental use (If blank/null, this post is shown to all users. If defined, this post is shown only to users with the same value for their experimental condition)
-
+    topic: String,
     // Sorted by least recent --> most recent
     // List of actor comments on the post
     comments: [new Schema({
