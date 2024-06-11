@@ -21,12 +21,14 @@ block content
         input.form-control(type='text', name='bio', id='bio',value=user.profile.bio)
       .field
         label(for='topics') Interests
-        .tags-container
-          - var topicsArray = user.profile.topics ? user.profile.topics.split(/[,;.\s]+/).filter(topic => topic) : []
-          each topic, index in topicsArray
-            .tag-item(style="display: inline-block;background-color: #1890ff;padding: 0.2em 0.5em;margin: 0.2em;color: white;border-radius: 3px;font-size: 0.875em;", data-index=index)
-              span.tag= topic
-                button.remove-tag(style="background-color: transparent;border: none;color: white;cursor: pointer;") &times;
+        .ui.selection.dropdown.multiple
+          input(type='hidden', name='topics', value=user.profile.topics.join(','))
+          i.dropdown.icon
+          .default.text Select Interests
+          .menu
+            each topic in ["Arts", "Business", "Pop Culture","Lifestyle","Fashion", "Entertainment","Fitness and Health", "Food","Gaming", "Educational","Music","News & Politics", "Science", "Sports", "Travel"]
+              - var selected = user.profile.topics.includes(topic) ? 'selected' : ''
+              .item(data-value=topic)= topic
       .field.image-upload
         p(style="font-weight: bold; font-size: medium; margin-bottom: 0.2em") Profile Picture 
           span(style="font-weight: normal") (Click to Change)
@@ -56,14 +58,12 @@ block scripts
   script(src='/public/js/profile.js')
   script.
     document.addEventListener('DOMContentLoaded', function() {
-      const tagContainer = document.querySelector('.tags-container');
-
-      tagContainer.addEventListener('click', function(event) {
-        if (event.target.classList.contains('remove-tag')) {
-          const tagItem = event.target.closest('.tag-item');
-          if (tagItem) {
-            tagItem.remove();
-          }
+    $('.ui.selection.dropdown').dropdown({
+        onChange: function (value, text, $selectedItem) {
+            // Trigger the change event on the hidden input to enable the submit button
+            $('input[name="topics"]').trigger('change');
+            $('form[id="profile"] button').removeClass('disabled').addClass('green');
         }
-      });
     });
+    });
+    

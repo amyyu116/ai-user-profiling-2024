@@ -1,8 +1,5 @@
 
 $(window).on("load", function () {
-    function tagsToText(tags) {
-
-    }
 
     function isPasswordFilled() {
         let isFilled = true;
@@ -64,14 +61,22 @@ $(window).on("load", function () {
     $('form[id="signup-form"] input[required]').on('input', function () {
         enableSaveBtn();
     });
-    $('form[id="signup-form"] input[type="checkbox"]').on('change', function () {
+    $('form[id="signup-form"] input[type="hidden"]').on('change', function () {
         enableSaveBtn();
     });
 
     // Update Profile and Password FORM: Form validation
-    $('form[id="profile"] input').on('input', function () {
+    $('.ui.selection.dropdown').dropdown({
+        onChange: function (value, text, $selectedItem) {
+            // Manually trigger change event on the hidden input
+            $('input[name="topics"]').val(value).trigger('change');
+        }
+    });
+    $('form[id="profile"] input, .ui.selection.dropdown').on('input change', function () {
         $('form[id="profile"] button').removeClass('disabled').addClass('green');
     });
+
+
     $('form[id="password"] input').on('input', function () {
         $('form[id="password"] button').removeClass('disabled');
 
@@ -81,5 +86,8 @@ $(window).on("load", function () {
             $('form[id="password"] button').removeClass("green");
         }
     });
+
+
+
 });
 
