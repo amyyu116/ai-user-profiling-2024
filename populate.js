@@ -174,10 +174,9 @@ async function doPopulate() {
                         actor: act,
                         time: timeStringToNum(new_post.time) || null,
                         class: new_post.class,
-                        topic: new_post.topic,
+                        topics: new_post.topics.split(','),
 
                     }
-                    console.log(postdetail.topic)
                     const script = new Script(postdetail);
                     try {
                         await script.save();

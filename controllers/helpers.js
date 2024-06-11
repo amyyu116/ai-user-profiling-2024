@@ -28,10 +28,13 @@ function shuffle(array) {
  *  - order: 'SHUFFLE', 'CHRONOLOGICAL'; indicates the order the posts in the final feed should be displayed in.
  *  - removedFlaggedContent (boolean): T/F; indicates if a flagged post should be removed from the final feed.
  *  - removedBlockedUserContent (boolean): T/F; indicates if posts from a blocked user should be removed from the final feed.
+ *  - feed_filters: string[]; default initialization is every topic we have our posts under
  * Returns: 
  *  - finalfeed: the processed final feed of posts for the user
  */
-exports.getFeed = function(user_posts, script_feed, user, order, removeFlaggedContent, removedBlockedUserContent) {
+exports.getFeed = function (user_posts, script_feed, user, order, removeFlaggedContent,
+    removedBlockedUserContent, feed_filters = ["Arts", "Business", "Pop Culture", "Lifestyle",
+        "Fashion", "Entertainment", "Fitness and Health", "Food", "Gaming", "Educational", "Music", "News & Politics", "Science", "Sports", "Travel"]) {
     // Array of posts for the final feed
     let finalfeed = [];
     // Array of seen and unseen posts, used when order=='shuffle' so that unseen posts appear before seen posts on the final feed.
@@ -49,7 +52,7 @@ exports.getFeed = function(user_posts, script_feed, user, order, removeFlaggedCo
             // Filter comments to include only past simulated comments, not future simulated comments. 
             user_posts[0].comments = user_posts[0].comments.filter(comment => comment.absTime < Date.now());
             // Sort comments from least to most recent.
-            user_posts[0].comments.sort(function(a, b) {
+            user_posts[0].comments.sort(function (a, b) {
                 return a.relativeTime - b.relativeTime;
             });
             // If the user post was made within the last 10 minutes, it should be appended to the top of the final feed. So, push it to new_user_posts.
@@ -70,7 +73,7 @@ exports.getFeed = function(user_posts, script_feed, user, order, removeFlaggedCo
 
             // Check if the user has interacted with this post by checking if a user.feedAction.post value matches this script_feed[0]'s _id. 
             // If the user has interacted with this post, add the user's interactions to the post.
-            const feedIndex = _.findIndex(user.feedAction, function(o) { return o.post.equals(script_feed[0].id) });
+            const feedIndex = _.findIndex(user.feedAction, function (o) { return o.post.equals(script_feed[0].id) });
             if (feedIndex != -1) {
                 // Check if there are comment-type actions on this post.
                 if (Array.isArray(user.feedAction[feedIndex].comments) && user.feedAction[feedIndex].comments) {
@@ -90,7 +93,7 @@ exports.getFeed = function(user_posts, script_feed, user, order, removeFlaggedCo
                         } else {
                             // This is not a user-made comment.
                             // Get the index of the comment in the post.
-                            const commentIndex = _.findIndex(script_feed[0].comments, function(o) { return o.id == commentObject.comment; });
+                            const commentIndex = _.findIndex(script_feed[0].comments, function (o) { return o.id == commentObject.comment; });
                             if (commentIndex != -1) {
                                 // Check if this comment has been liked by the user. If true, update the comment in the post.
                                 if (commentObject.liked) {
@@ -105,7 +108,7 @@ exports.getFeed = function(user_posts, script_feed, user, order, removeFlaggedCo
                     }
                 }
                 // Sort the comments in the post from least to most recent.
-                script_feed[0].comments.sort(function(a, b) {
+                script_feed[0].comments.sort(function (a, b) {
                     return a.time - b.time;
                 });
 
