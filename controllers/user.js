@@ -157,7 +157,7 @@ exports.postSignupInfo = async (req, res, next) => {
         if (req.file) {
             user.profile.picture = req.file.filename;
         }
-        user.profile.topics = req.body.topics.trim() || '';
+        user.profile.topics = req.body.topics.split(',');
         await user.save();
         req.flash('success', { msg: 'Profile information has been updated.' });
         return res.redirect('/com');
@@ -224,6 +224,9 @@ exports.postUpdateProfile = async (req, res, next) => {
         user.profile.name = req.body.name.trim() || '';
         user.profile.location = req.body.location.trim() || '';
         user.profile.bio = req.body.bio.trim() || '';
+        topicsArray = req.body.topics.split(',') || '';
+        topicsArray = topicsArray.map(topic => topic.trim());
+        user.profile.topics = topicsArray;
         if (req.file) {
             user.profile.picture = req.file.filename;
         }

@@ -5,7 +5,7 @@ block content
     h2(style="text-align: center;") Tell Us A Little More About Yourself
 
     form.ui.large.form(action='/account/signup_info_post', method='POST', enctype='multipart/form-data')
-      input(type='hidden', name='_csrf', value=_csrf)
+      input(class='hidden', name='_csrf', value=_csrf)
       .field.image-upload
         p(style="font-weight: bold; font-size: medium; margin-bottom: 0.2em") Profile Picture 
           span(style="font-weight: normal") (Click to Change)
@@ -27,7 +27,13 @@ block content
         textarea(rows='2', name='bio', id='bio')=user.profile.bio
       .field
         label(for='topics') Interests
-        textarea(rows='2', name='topics', id='topics')=user.profile.topics
+        .ui.selection.dropdown.multiple
+          input(type='hidden', name='topics')
+          i.dropdown.icon
+          .default.text Select Interests
+          .menu
+            each topic in ["Arts", "Business", "Pop Culture","Lifestyle","Fashion", "Entertainment","Fitness and Health", "Food","Gaming", "Educational","Music","News & Politics", "Science", "Sports", "Travel"]
+              .item(data-value=topic)= topic
       .ui.buttons
         button.ui.large.positive.button(type='submit') Save
         .or
@@ -38,3 +44,7 @@ block content
     $('button.ui.button.com').on('click', function() {
         window.location.href = '/com';
       });
+  script.
+    document.addEventListener('DOMContentLoaded', function() {
+    $('.ui.dropdown').dropdown();
+    });
