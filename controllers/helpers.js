@@ -28,21 +28,21 @@ function shuffle(array) {
  *  - order: 'SHUFFLE', 'CHRONOLOGICAL'; indicates the order the posts in the final feed should be displayed in.
  *  - removedFlaggedContent (boolean): T/F; indicates if a flagged post should be removed from the final feed.
  *  - removedBlockedUserContent (boolean): T/F; indicates if posts from a blocked user should be removed from the final feed.
- *  - feed_filters: string[]; default initialization is every topic we have our posts under
+ *  - feed_filters: string[]; pushes posts relevant to user interests to the top
  * Returns: 
  *  - finalfeed: the processed final feed of posts for the user
  */
 exports.getFeed = function (user_posts, script_feed, user, order, removeFlaggedContent,
-    removedBlockedUserContent, feed_filters = ["Arts", "Business", "Pop Culture", "Lifestyle",
-        "Fashion", "Entertainment", "Fitness and Health", "Food", "Gaming", "Educational", "Music", "News & Politics", "Science", "Sports", "Travel"]) {
+    removedBlockedUserContent, feed_filters) {
     // Array of posts for the final feed
     let finalfeed = [];
+    // Array of posts that are "topical"
+    let topicalfeed = [];
     // Array of seen and unseen posts, used when order=='shuffle' so that unseen posts appear before seen posts on the final feed.
     let finalfeed_seen = [];
     let finalfeed_unseen = [];
     // Array of recent user posts, made within the last 10 minutes, used to append to the top of the final feed.
     let new_user_posts = [];
-
     // While there are actor posts or user posts to add to the final feed
     while (script_feed.length || user_posts.length) {
         // If there are no more script_feed posts or if user_post[0] post is more recent than script_feed[0] post, then add user_post[0] post to the finalfeed.
@@ -140,7 +140,15 @@ exports.getFeed = function (user_posts, script_feed, user, order, removeFlaggedC
                             finalfeed_seen.push(script_feed[0]);
                         }
                     } else {
-                        finalfeed.push(script_feed[0]);
+                        console.log(user.profile.topics);
+                        console.log(script_feed[0].topics);
+                        if (feed_filters.length == 0 && user.profile.topics.some(category => script_feed[0].topics.includes(category))) {
+                            topicalfeed.push(script_feed[0]);
+                        }
+                        else {
+                            finalfeed.push(script_feed[0]);
+                        }
+
                     }
                     script_feed.splice(0, 1);
                 }
@@ -152,7 +160,14 @@ exports.getFeed = function (user_posts, script_feed, user, order, removeFlaggedC
                     if (order == 'SHUFFLE') {
                         finalfeed_unseen.push(script_feed[0]);
                     } else {
-                        finalfeed.push(script_feed[0]);
+                        console.log(user.profile.topics);
+                        console.log(script_feed[0].topics);
+                        if (feed_filters.length == 0 && user.profile.topics.some(category => script_feed[0].topics.includes(category))) {
+                            topicalfeed.push(script_feed[0]);
+                        }
+                        else {
+                            finalfeed.push(script_feed[0]);
+                        }
                     }
                     script_feed.splice(0, 1);
                 }
@@ -165,7 +180,8 @@ exports.getFeed = function (user_posts, script_feed, user, order, removeFlaggedC
         finalfeed_unseen = shuffle(finalfeed_unseen);
         finalfeed = finalfeed_unseen.concat(finalfeed_seen);
     }
-    // Concatenate the most recent user posts to the front of finalfeed.
-    finalfeed = new_user_posts.concat(finalfeed);
+    // Concatenate the most recent user posts to the front of finalfeed
+    topicalfeed = new_user_posts.concat(topicalfeed);
+    finalfeed = topicalfeed.concat(finalfeed);
     return finalfeed;
 };

@@ -42,8 +42,11 @@ exports.getScript = async (req, res, next) => {
         }
 
         // Array of actor posts that match the user's experimental condition, within the past 24 hours, sorted by descending time. 
+        let feed_filter = user.profile.topics;
+
         let script_feed = await Script.find({
-            class: { "$in": ["", user.experimentalCondition] }
+            class: { "$in": ["", user.experimentalCondition] },
+            topics: { "$in": feed_filter }
         })
             .where('time').lte(time_diff).gte(time_limit)
             .sort('-time')
@@ -51,6 +54,18 @@ exports.getScript = async (req, res, next) => {
             .populate('comments.actor')
             .exec();
 
+
+        let additional_posts = await Script.find({
+            class: { "$in": ["", user.experimentalCondition] },
+            topics: { "$nin": feed_filter } // Excluding posts with topics already in the feed
+        })
+            .where('time').lte(time_diff).gte(time_limit)
+            .sort('-time')
+            .populate('actor')
+            .populate('comments.actor')
+            .exec();
+
+        script_feed = script_feed.concat(additional_posts);
         // Array of any user-made posts within the past 24 hours, sorted by time they were created.
         let user_posts = user.getPostInPeriod(time_limit, time_diff);
         user_posts.sort(function (a, b) {
@@ -58,7 +73,7 @@ exports.getScript = async (req, res, next) => {
         });
 
         // Get the newsfeed and render it.
-        const finalfeed = helpers.getFeed(user_posts, script_feed, user, process.env.FEED_ORDER, true);
+        const finalfeed = helpers.getFeed(user_posts, script_feed, user, process.env.FEED_ORDER, true, true, user.profile.topics);
         console.log("Script Size is now: " + finalfeed.length);
         await user.save();
         res.render('script', { script: finalfeed, showNewPostIcon: true });
