@@ -9,7 +9,8 @@
     a(href='/me')
       span=user.profile.name || user.username || user.id
   .image
-    img(src='/user_post/'+val.picture)
+    if val.picture 
+      img(src='/user_post/'+val.picture)
   .content
     .description=val.body
   .two.ui.bottom.attached.icon.buttons

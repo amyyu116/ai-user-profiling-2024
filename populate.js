@@ -169,7 +169,7 @@ async function doPopulate() {
                     const postdetail = {
                         postID: new_post.id,
                         body: new_post.body,
-                        picture: new_post.picture,
+                        picture: new_post.picture || '',
                         likes: getLikes(),
                         actor: act,
                         time: timeStringToNum(new_post.time) || null,
