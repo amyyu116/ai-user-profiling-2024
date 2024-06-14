@@ -10,7 +10,7 @@ const _ = require('lodash');
  * If query parameter 'bell' is true, return the number of new/ unseen notifications.
  * If it is false, render the notifications page.
  */
-exports.getNotifications = async(req, res) => {
+exports.getNotifications = async (req, res) => {
     try {
         if (req.user) {
             const user = await User.findById(req.user.id)
@@ -24,9 +24,9 @@ exports.getNotifications = async(req, res) => {
             const currDate = Date.now();
             const lastNotifyVisit = user.lastNotifyVisit; //Absolute Date
             const notification_feed = await Notification.find({
-                    $or: [{ userPostID: { $lte: user.numPosts } }, { userReply: { $lte: user.numComments } }],
-                    class: { "$in": ["", user.experimentalCondition] }
-                })
+                $or: [{ userPostID: { $lte: user.numPosts } }, { userReply: { $lte: user.numComments } }],
+                class: { "$in": ["", user.experimentalCondition] }
+            })
                 .populate('actor')
                 .sort('-time')
                 .exec();
@@ -65,7 +65,7 @@ exports.getNotifications = async(req, res) => {
                         else {
                             const key = notification.notificationType + "_" + userPostID; //like_X, read_X
                             //Check if a notification for this post exists already
-                            let notifyIndex = _.findIndex(final_notify, function(o) { return o.key == key });
+                            let notifyIndex = _.findIndex(final_notify, function (o) { return o.key == key });
                             if (notifyIndex == -1) {
                                 let tmp = {
                                     key: key,
@@ -103,7 +103,7 @@ exports.getNotifications = async(req, res) => {
                             }
                             //Update the number of likes on user post
                             if (notification.notificationType == 'like') {
-                                const postIndex = _.findIndex(user.posts, function(o) { return o.postID == userPostID; });
+                                const postIndex = _.findIndex(user.posts, function (o) { return o.postID == userPostID; });
                                 user.posts[postIndex].likes = final_notify[notifyIndex].numLikes;
                             }
                         } //end of LIKE or READ
@@ -131,7 +131,7 @@ exports.getNotifications = async(req, res) => {
                     if (notification.time <= time_diff) {
                         const key = "reply_" + notification.notificationType + "_" + userReplyID; //reply_like_X, reply_read_X
                         //Check if a notification for this comment exists already
-                        let notifyIndex = _.findIndex(final_notify, function(o) { return o.key == key });
+                        let notifyIndex = _.findIndex(final_notify, function (o) { return o.key == key });
                         if (notifyIndex == -1) {
                             let tmp = {
                                 key: key,
@@ -171,12 +171,12 @@ exports.getNotifications = async(req, res) => {
                         }
                         if (notification.notificationType == 'like') {
                             if (postType == "user") {
-                                const postIndex = _.findIndex(user.posts, function(o) { return o.postID == userPostID; });
-                                const commentIndex = _.findIndex(user.posts[postIndex].comments, function(o) { return o.commentID == userReplyID && o.new_comment == true });
+                                const postIndex = _.findIndex(user.posts, function (o) { return o.postID == userPostID; });
+                                const commentIndex = _.findIndex(user.posts[postIndex].comments, function (o) { return o.commentID == userReplyID && o.new_comment == true });
                                 user.posts[postIndex].comments[commentIndex].likes = final_notify[notifyIndex].numLikes;
                             } else {
-                                const postIndex = _.findIndex(user.feedAction, function(o) { return o.post.equals(userPostID); });
-                                const commentIndex = _.findIndex(user.feedAction[postIndex].comments, function(o) { return o.new_comment_id == userReplyID && o.new_comment == true });
+                                const postIndex = _.findIndex(user.feedAction, function (o) { return o.post.equals(userPostID); });
+                                const commentIndex = _.findIndex(user.feedAction[postIndex].comments, function (o) { return o.new_comment_id == userReplyID && o.new_comment == true });
                                 user.feedAction[postIndex].comments[commentIndex].likes = final_notify[notifyIndex].numLikes;
                             }
                         }
@@ -184,7 +184,7 @@ exports.getNotifications = async(req, res) => {
                 }
             }
 
-            final_notify.sort(function(a, b) {
+            final_notify.sort(function (a, b) {
                 return b.time - a.time;
             });
 
@@ -194,8 +194,8 @@ exports.getNotifications = async(req, res) => {
                 .filter(post => (post.comments.filter(comment => comment.new_comment == true).length) > 0)
                 .map(post => post.post); // IDs of actor posts user has commented on.       
             const posts = await Script.find({
-                    _id: { "$in": repliesOnActorPosts }
-                })
+                _id: { "$in": repliesOnActorPosts }
+            })
                 .populate('actor')
                 .populate('comments.actor')
                 .exec();

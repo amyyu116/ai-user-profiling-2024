@@ -1,9 +1,11 @@
+const Groq = require('groq-sdk');
 const Script = require('../models/Script.js');
 const User = require('../models/User');
 const Notification = require('../models/Notification');
 const helpers = require('./helpers');
 const _ = require('lodash');
 const dotenv = require('dotenv');
+const Actor = require('../models/Actor.js');
 dotenv.config({ path: '.env' }); // See the file .env.example for the structure of .env
 
 /**
@@ -82,28 +84,127 @@ exports.getScript = async (req, res, next) => {
     }
 };
 
+// handling user made posts
+
+// AI-generation helper functions
+
+
+const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+async function getResponse(postText, comment = null) {
+    let response = "You should not be seeing this!";
+    if (comment) {
+        chatCompletion = await generateReply(postText, comment);
+        response = chatCompletion.choices[0].message.content;
+    } else {
+        chatCompletion = await generateComment(postText, comment);
+        response = chatCompletion.choices[0].message.content;
+    }
+    return response;
+}
+
+
+async function generateReply(postText, comment) {
+    const sysPrompt = "You are a young 21-year old male social media user on the internet.";
+    return groq.chat.completions.create({
+        // remove hard-coded system prompt for "actor" personality
+        messages: [
+            {
+                role: "system",
+                content: sysPrompt,
+            },
+            {
+                role: "assistant",
+                content: postText,
+            },
+            {
+                role: "user",
+                content: comment
+            }
+        ],
+        model: "llama3-8b-8192",
+    });
+}
+
+async function generateComment(postText) {
+    const sysPrompt = "You are a young 21-year old male social media user on the internet.";
+    return groq.chat.completions.create({
+        // remove hard-coded system prompt for "actor" personalities
+        messages: [
+            {
+                role: "system",
+                content: sysPrompt,
+            },
+            {
+                role: "user",
+                content: postText
+            }
+        ],
+        model: "llama3-8b-8192",
+    });
+}
+
+function timeStringToNum(v) {
+    var timeParts = v.split(":");
+    if (timeParts[0] == "-0")
+        // -0:XX
+        return -1 * parseInt(((timeParts[0] * (60000 * 60)) + (timeParts[1] * 60000)), 10);
+    else if (timeParts[0].startsWith('-'))
+        //-X:XX
+        return parseInt(((timeParts[0] * (60000 * 60)) + (-1 * (timeParts[1] * 60000))), 10);
+    else
+        return parseInt(((timeParts[0] * (60000 * 60)) + (timeParts[1] * 60000)), 10);
+};
+
 /*
  * Post /post/new
  * Record a new user-made post. Include any actor replies (comments) that go along with it.
  */
-exports.newPost = async (req, res) => {
+exports.newPost = async (req, res, next) => {
     try {
         const user = await User.findById(req.user.id).exec();
-        if (req.file) {
+        if (req.body) {
             user.numPosts = user.numPosts + 1; // Count begins at 0
             const currDate = Date.now();
-
+            const filename = '';
+            if (req.file) {
+                filename = req.file.filename;
+            }
             let post = {
                 type: "user_post",
                 postID: user.numPosts,
-                body: req.body.body,
-                picture: req.file.filename || '',
+                body: req.body.body || '',
+                picture: filename,
                 liked: false,
                 likes: 0,
                 comments: [],
                 absTime: currDate,
                 relativeTime: currDate - user.createdAt,
             };
+
+            // Generate a dynamic response via AI.
+
+            if (req.body.body) {
+                AIResponse = await getResponse(post.body);
+                // use the dummy actor we generated
+                const dummy = await Actor.findOne({ username: "undefined" }).exec();
+                const notifdetails = {
+                    actor: dummy,
+                    notificationType: 'reply',
+                    time: timeStringToNum("0:03"),
+                    userPostID: post.postID,
+                    replyBody: AIResponse,
+                    class: null,
+
+                }
+                const newnotif = new Notification(notifdetails);
+                try {
+                    await newnotif.save();
+                } catch (err) {
+                    console.log(err);
+                    next(err);
+                }
+            }
 
             // Find any Actor replies (comments) that go along with this post
             const actor_replies = await Notification.find()

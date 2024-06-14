@@ -73,7 +73,9 @@ exports.getFeed = function (user_posts, script_feed, user, order, removeFlaggedC
 
             // Check if the user has interacted with this post by checking if a user.feedAction.post value matches this script_feed[0]'s _id. 
             // If the user has interacted with this post, add the user's interactions to the post.
-            const feedIndex = _.findIndex(user.feedAction, function (o) { return o.post.equals(script_feed[0].id) });
+            const feedIndex = _.findIndex(user.feedAction, function (o) {
+                return o.post && o.post.equals(script_feed[0].id);
+            });
             if (feedIndex != -1) {
                 // Check if there are comment-type actions on this post.
                 if (Array.isArray(user.feedAction[feedIndex].comments) && user.feedAction[feedIndex].comments) {
@@ -140,15 +142,15 @@ exports.getFeed = function (user_posts, script_feed, user, order, removeFlaggedC
                             finalfeed_seen.push(script_feed[0]);
                         }
                     } else {
-                        console.log(user.profile.topics);
-                        console.log(script_feed[0].topics);
-                        if (feed_filters.length == 0 && user.profile.topics.some(category => script_feed[0].topics.includes(category))) {
-                            topicalfeed.push(script_feed[0]);
-                        }
-                        else {
-                            finalfeed.push(script_feed[0]);
-                        }
-
+                        finalfeed.push(script_feed[0]);
+                        // console.log(user.profile.topics);
+                        // console.log(script_feed[0].topics);
+                        // if (feed_filters.length == 0 && user.profile.topics.some(category => script_feed[0].topics.includes(category))) {
+                        //     topicalfeed.push(script_feed[0]);
+                        // }
+                        // else {
+                        //     finalfeed.push(script_feed[0]);
+                        // }
                     }
                     script_feed.splice(0, 1);
                 }
@@ -160,14 +162,15 @@ exports.getFeed = function (user_posts, script_feed, user, order, removeFlaggedC
                     if (order == 'SHUFFLE') {
                         finalfeed_unseen.push(script_feed[0]);
                     } else {
-                        console.log(user.profile.topics);
-                        console.log(script_feed[0].topics);
-                        if (feed_filters.length == 0 && user.profile.topics.some(category => script_feed[0].topics.includes(category))) {
-                            topicalfeed.push(script_feed[0]);
-                        }
-                        else {
-                            finalfeed.push(script_feed[0]);
-                        }
+                        finalfeed.push(script_feed[0]);
+                        // console.log(user.profile.topics);
+                        // console.log(script_feed[0].topics);
+                        // if (feed_filters.length == 0 && user.profile.topics.some(category => script_feed[0].topics.includes(category))) {
+                        //     topicalfeed.push(script_feed[0]);
+                        // }
+                        // else {
+
+                        // }
                     }
                     script_feed.splice(0, 1);
                 }

@@ -49,7 +49,7 @@ const userSchema = new mongoose.Schema({
         type: String, // Value is always: 'user_post'
         postID: Number, // ID for user post (0,1,2,3...)
         body: { type: String, default: '', trim: true }, // Text(body) of post
-        picture: String, // Picture (file path) for post
+        picture: { type: String, default: '' }, // Picture (file path) for post
         liked: { type: Boolean, default: false }, // Indicates if the user has liked the post
         likes: { type: Number, default: 0 }, // Indicates the number of likes on the post by actors (excludes the user's own like)
 

@@ -1,12 +1,16 @@
-$(window).on("load", function() {
+$(window).on("load", function () {
     $('.ui.tiny.post.modal').modal({
         observeChanges: true
     });
 
     // Add new post Modal functionality
-    $("#newpost, a.item.newpost").click(function() {
+    $("#newpost, a.item.newpost").click(function () {
         $('.ui.tiny.post.modal').modal('show');
     });
+
+    $.fn.form.settings.rules.eitherBodyOrPic = function (value, fields) {
+        return fields.body.trim() !== '' || fields.picinput !== '/public/photo-camera.svg';
+    };
 
     // new post validator (picture and text can not be empty); using Fomantic UI
     $('#postform').form({
@@ -16,7 +20,7 @@ $(window).on("load", function() {
                 identifier: 'body',
                 rules: [{
                     type: 'empty',
-                    prompt: 'Please add some text about your meal.'
+                    prompt: 'Please add some text.'
                 }]
             },
             picinput: {
@@ -27,7 +31,7 @@ $(window).on("load", function() {
                 }]
             }
         },
-        onSuccess: function(event, fields) {
+        onSuccess: function (event, fields) {
             $("#postform")[0].submit();
             $('.actions .ui.green.button').addClass('disabled');
             $('.actions .ui.green.button').val('Posting...');

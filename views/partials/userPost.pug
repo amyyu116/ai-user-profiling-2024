@@ -8,11 +8,11 @@
         img(src=user.gravatar(60))
     a(href='/me')
       span=user.profile.name || user.username || user.id
+  .content
+    .description=val.body
   .image
     if val.picture 
       img(src='/user_post/'+val.picture)
-  .content
-    .description=val.body
   .two.ui.bottom.attached.icon.buttons
     .ui.reply.button(tabindex='0')
       i.reply.icon
