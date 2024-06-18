@@ -1,17 +1,13 @@
 version: '2'
 services:
   mongo:
-    image: mongo:3.4
-  node_modules:
-    build: 
-     context: .
-     dockerfile: Dockerfile_nodemodules
+    image: mongo:latest
+    # ports:   # Uncomment these lines if you want to expose the MongoDB port locally on your host
+    #  - "27017:27017"
   web:
     build: .
     ports:
      - "3000:3000"
-    environment:
-     - MONGODB_URI=mongodb://mongo:27017/test 
     links:
      - mongo 
     depends_on: 
