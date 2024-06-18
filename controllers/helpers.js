@@ -18,6 +18,28 @@ function shuffle(array) {
     return array;
 }
 
+function deepCopy(post) {
+    newPost = {
+        type: 'user_post',
+        postID: post.postID,
+        body: post.body,
+        picture: post.picture,
+        liked: post.liked,
+        likes: post.likes,
+
+        comments: [],
+        absTime: post.absTime,
+        relativeTime: post.relativeTime
+    }
+
+    for (comment in post.comments) {
+        if (comment.absTime < Date.now()) {
+            new_comment = JSON.parse(JSON.stringify(comment));
+            newPost.comments.push(new_comment);
+        }
+    }
+    return newPost;
+}
 /**
  * This is a helper function, called in .getNotifications() (./notifications.js controller file), .getScript() (./script.js controller file), .getActor() (./actors.js controller file).
  * It takes in a list of user posts, a list of actor posts, a User document, and other parameters, and it processes and generates a final feed of posts for the user based on these parameters.
@@ -50,14 +72,18 @@ exports.getFeed = function (user_posts, script_feed, user, order, removeFlaggedC
         if (script_feed[0] === undefined ||
             ((user_posts[0] !== undefined) && (script_feed[0].time < user_posts[0].relativeTime))) {
             // Filter comments to include only past simulated comments, not future simulated comments. 
-            user_posts[0].comments = user_posts[0].comments.filter(comment => comment.absTime < Date.now());
+            new_post = user_posts[0];
             // Sort comments from least to most recent.
-            user_posts[0].comments.sort(function (a, b) {
+            new_post.comments.sort(function (a, b) {
                 return a.relativeTime - b.relativeTime;
+            });
+            // toggle visibility based on time
+            new_post.comments.forEach(comment => {
+                comment.visible = comment.absTime < Date.now();
             });
             // If the user post was made within the last 10 minutes, it should be appended to the top of the final feed. So, push it to new_user_posts.
             if ((Date.now() - user_posts[0].absTime) < 600000) {
-                new_user_posts.push(user_posts[0]);
+                new_user_posts.push(new_post);
                 user_posts.splice(0, 1);
             } // Else, proceed normally.
             else {

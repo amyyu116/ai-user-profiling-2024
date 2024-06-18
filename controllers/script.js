@@ -194,7 +194,7 @@ exports.newPost = async (req, res, next) => {
                     time: timeStringToNum("0:03"),
                     userPostID: post.postID,
                     replyBody: AIResponse,
-                    class: null,
+                    class: "",
 
                 }
                 const newnotif = new Notification(notifdetails);
@@ -220,7 +220,7 @@ exports.newPost = async (req, res, next) => {
                         actor: reply.actor._id,
                         body: reply.replyBody,
                         commentID: user.numActorReplies,
-                        relativeTime: post.relativeTime + reply.time,
+                        relativeTime: reply.time,
                         absTime: new Date(user.createdAt.getTime() + post.relativeTime + reply.time),
                         new_comment: false,
                         liked: false,

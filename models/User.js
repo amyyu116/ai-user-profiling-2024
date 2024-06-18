@@ -63,7 +63,8 @@ const userSchema = new mongoose.Schema({
             new_comment: { type: Boolean, default: false }, // Indicates if the comment is user-made
             liked: { type: Boolean, default: false }, // Indicates if the user has liked the comment
             flagged: { type: Boolean, default: false }, // Indicates if the user has flagged the comment
-            likes: { type: Number, default: 0 } // Indicates the # of likes on the comment by actors (excludes the user's own like)
+            likes: { type: Number, default: 0 }, // Indicates the # of likes on the comment by actors (excludes the user's own like)
+            visible: { type: Boolean, default: false } // Toggles when the time is right !
         }, { versionKey: false })],
 
         absTime: Date, // Absolute Time; Indicates the exact time the post was made
