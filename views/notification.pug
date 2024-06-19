@@ -72,14 +72,18 @@ block content
                   .label
                     i.large.reply.icon
                   .content
-                    img.ui.tiny.right.floated.rounded.image(src='/user_post/'+notification.picture)
                     .extra.images
                         a.ui.avatar.image(href='/user/'+notification.actor.username, data-tooltip=notification.actor.profile.name, data-position='bottom center')                       
                           img.ui.avatar.image(src='/public/picture.svg', data-src='/profile_pictures/'+notification.actor.profile.picture)
                     .summary
-                      a(href='/user/'+notification.actor.username)
-                        span=notification.actor.profile.name
-                      |  has commented on your post.
+                      if notification.body
+                        a(href='/user/'+notification.actor.username)
+                          span=notification.actor.profile.name
+                        |  has commented on your post.
+                      else
+                        a(href='/user/'+notification.actor.username)
+                          span=notification.actor.profile.name
+                        |  has replied to your comment.
                       .date=notification.time
                     .extra.text=notification.replyBody
               when 'reply_read'

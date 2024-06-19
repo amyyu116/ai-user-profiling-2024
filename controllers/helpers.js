@@ -1,5 +1,6 @@
 const _ = require('lodash');
 
+
 // From https://stackoverflow.com/questions/2450954/how-to-randomize-shuffle-a-javascript-array
 // Function shuffles the content of an array and returns the shuffled array.
 function shuffle(array) {
@@ -18,28 +19,7 @@ function shuffle(array) {
     return array;
 }
 
-function deepCopy(post) {
-    newPost = {
-        type: 'user_post',
-        postID: post.postID,
-        body: post.body,
-        picture: post.picture,
-        liked: post.liked,
-        likes: post.likes,
 
-        comments: [],
-        absTime: post.absTime,
-        relativeTime: post.relativeTime
-    }
-
-    for (comment in post.comments) {
-        if (comment.absTime < Date.now()) {
-            new_comment = JSON.parse(JSON.stringify(comment));
-            newPost.comments.push(new_comment);
-        }
-    }
-    return newPost;
-}
 /**
  * This is a helper function, called in .getNotifications() (./notifications.js controller file), .getScript() (./script.js controller file), .getActor() (./actors.js controller file).
  * It takes in a list of user posts, a list of actor posts, a User document, and other parameters, and it processes and generates a final feed of posts for the user based on these parameters.
@@ -55,7 +35,7 @@ function deepCopy(post) {
  *  - finalfeed: the processed final feed of posts for the user
  */
 exports.getFeed = function (user_posts, script_feed, user, order, removeFlaggedContent,
-    removedBlockedUserContent, feed_filters) {
+    removedBlockedUserContent) {
     // Array of posts for the final feed
     let finalfeed = [];
     // Array of posts that are "topical"

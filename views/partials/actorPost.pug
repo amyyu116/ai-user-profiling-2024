@@ -72,6 +72,7 @@
                 .actions
                   a.like.comment(class=comment.liked ? "red" : null ) !{comment.liked ? "Unlike" : "Like"}
                   a.flag.comment Flag
+                  a.reply.comment(data-username=comment.actor.username) Reply
   .extra.content
     .ui.fluid.left.labeled.right.icon.input
       .ui.label
@@ -83,3 +84,21 @@
         .field 
           textarea.newcomment(type='text', placeholder='Write a Comment' rows='1')
       i.big.send.link.icon
+
+block scripts
+  script.
+    document.addEventListener('DOMContentLoaded', (event) => {
+        document.querySelectorAll('.reply.comment').forEach(replyButton => {
+            replyButton.addEventListener('click', function() {
+                const username = this.getAttribute('data-username');
+                const parentContainer = this.closest('.ui.fluid.card.dim'); // Adjust the selector as per your parent container
+                if (parentContainer) {
+                    const commentTextarea = parentContainer.querySelector('textarea.newcomment');
+                    if (commentTextarea) {
+                        commentTextarea.value = `@${username} `;
+                        commentTextarea.focus();
+                    }
+                }
+            });
+        });
+    });

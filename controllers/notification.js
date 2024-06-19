@@ -10,7 +10,7 @@ const _ = require('lodash');
  * If query parameter 'bell' is true, return the number of new/ unseen notifications.
  * If it is false, render the notifications page.
  */
-exports.getNotifications = async (req, res) => {
+exports.getNotifications = async (req, res, next) => {
     try {
         if (req.user) {
             const user = await User.findById(req.user.id)
@@ -24,7 +24,7 @@ exports.getNotifications = async (req, res) => {
             const currDate = Date.now();
             const lastNotifyVisit = user.lastNotifyVisit; //Absolute Date
             const notification_feed = await Notification.find({
-                $or: [{ userPostID: { $lte: user.numPosts } }, { userReply: { $lte: user.numComments } }],
+                $or: [{ userPostID: { $lte: user.numPosts } }, { userReplyID: { $lte: user.numComments } }],
                 class: { "$in": ["", user.experimentalCondition] }
             })
                 .populate('actor')
@@ -89,9 +89,7 @@ exports.getNotifications = async (req, res) => {
                                 //Update notification actor profile
                                 //if generic-joe, append. else, shift to the front of the line.
                                 if (notification.notificationType == "read" && notification.actor.username == "generic-joe") {
-                                    final_notify[notifyIndex].actors.push(notification.actor);
-                                } else {
-                                    final_notify[notifyIndex].actors.unshift(notification.actor);
+                                    continue
                                 }
                                 //Update notification time and read/unread classification
                                 if ((userPost.absTime.getTime() + notification.time) > final_notify[notifyIndex].time) {
@@ -109,8 +107,8 @@ exports.getNotifications = async (req, res) => {
                         } //end of LIKE or READ
                     } //end of userPost (read, like, comment)
                 } //Notification is about a userReply (read, like)
-                else if (notification.userReply >= 0) {
-                    const userReplyID = notification.userReply;
+                else if (notification.userReplyID >= 0) {
+                    const userReplyID = notification.userReplyID;
                     const userReply_userPost = user.posts.find(post => post.comments.find(comment => comment.commentID == userReplyID && comment.new_comment == true) !== undefined);
                     const userReply_actorPost_feedAction = user.feedAction.find(feedAction => feedAction.comments.find(comment => comment.new_comment_id == userReplyID && comment.new_comment == true) !== undefined);
                     let userReply_actorPost;
@@ -129,7 +127,10 @@ exports.getNotifications = async (req, res) => {
                     const time_diff = currDate - time; //Time difference between now and the time comment was created.
                     //check if we show this notification yet
                     if (notification.time <= time_diff) {
-                        const key = "reply_" + notification.notificationType + "_" + userReplyID; //reply_like_X, reply_read_X
+                        let key = "reply_" + notification.notificationType + "_" + userReplyID;
+                        if (notification.notificationType == 'reply') {
+                            key = replyKey = "actorReply_" + notification.userReplyID;
+                        }
                         //Check if a notification for this comment exists already
                         let notifyIndex = _.findIndex(final_notify, function (o) { return o.key == key });
                         if (notifyIndex == -1) {
@@ -154,12 +155,9 @@ exports.getNotifications = async (req, res) => {
                             if (notification.notificationType == 'like') {
                                 final_notify[notifyIndex].numLikes += 1;
                             }
-                            //Update notification actor profile
-                            //if generic-joe, append. else, shift to the front of the line.
+                            // let's avoid some spam
                             if (notification.notificationType == "read" && notification.actor.username == "generic-joe") {
-                                final_notify[notifyIndex].actors.push(notification.actor);
-                            } else {
-                                final_notify[notifyIndex].actors.unshift(notification.actor);
+                                continue
                             }
                             //Update notification time and read/unread classification
                             if (time + notification.time > final_notify[notifyIndex].time) {
@@ -180,14 +178,38 @@ exports.getNotifications = async (req, res) => {
                                 user.feedAction[postIndex].comments[commentIndex].likes = final_notify[notifyIndex].numLikes;
                             }
                         }
+                        if (notification.notificationType == 'reply') {
+                            if (postType == "user") {
+                                // TODO: add response to user-made posts
+                            } else {
+                                // const postIndex = _.findIndex(user.posts, function (o) { return o.postID == userPostID; });
+                                // user.feedAction[postIndex].comments[commentIndex].likes = final_notify[notifyIndex].numLikes;
+                                const replyKey = "actorReply_" + notification.userReplyID;
+                                const actorPost = await Script.find({
+                                    _id: notification.postID,
+                                }).exec();
+                                const reply_tmp = {
+                                    key: replyKey,
+                                    action: 'reply',
+                                    postID: notification.postID,
+                                    replyBody: notification.replyBody,
+                                    time: notification.time,
+                                    actor: notification.actor,
+                                    unreadNotification: actorPost.time + notification.time > lastNotifyVisit,
+                                };
+                                final_notify.push(reply_tmp);
+                            }
+                        }
                     }
                 }
             }
-
             final_notify.sort(function (a, b) {
                 return b.time - a.time;
             });
-
+            final_notify = final_notify.filter((notif) => notif.action !== 'reply_reply');
+            final_notify = final_notify.filter((notif) => notif.action !== 'reply_read');
+            final_notify = final_notify.filter((notif) => notif.action !== 'read');
+            console.log(final_notify);
             const userPosts = user.getPosts().slice(0) || [];
 
             const repliesOnActorPosts = user.feedAction

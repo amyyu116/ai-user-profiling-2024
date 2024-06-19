@@ -88,24 +88,50 @@ exports.getScript = async (req, res, next) => {
 
 // AI-generation helper functions
 
+function timeStringToNum(v) {
+    var timeParts = v.split(":");
+    if (timeParts[0] == "-0")
+        // -0:XX
+        return -1 * parseInt(((timeParts[0] * (60000 * 60)) + (timeParts[1] * 60000)), 10);
+    else if (timeParts[0].startsWith('-'))
+        //-X:XX
+        return parseInt(((timeParts[0] * (60000 * 60)) + (-1 * (timeParts[1] * 60000))), 10);
+    else
+        return parseInt(((timeParts[0] * (60000 * 60)) + (timeParts[1] * 60000)), 10);
+};
+
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-async function getResponse(postText, comment = null) {
+async function getResponse(postText, actorID = null, comments = null) {
     let response = "You should not be seeing this!";
-    if (comment) {
-        chatCompletion = await generateReply(postText, comment);
+    if (comments) {
+        // check if responding to reply chain
+        chatCompletion = await generateReply(actorID, postText, comments);
         response = chatCompletion.choices[0].message.content;
     } else {
-        chatCompletion = await generateComment(postText, comment);
+        // generating response to new, user-made post (a.k.a., no existing comments)
+        chatCompletion = await generateComment(postText);
         response = chatCompletion.choices[0].message.content;
     }
     return response;
 }
 
 
-async function generateReply(postText, comment) {
-    const sysPrompt = "You are a young 21-year old male social media user on the internet.";
+async function generateReply(postText, actorID = null, postComments = null) {
+
+    let sysPrompt = "You are a young 21-year old male social media user on the internet.";
+    if (actorID) {
+        try {
+            let actor = await Actor.findOne({ id: actorID }).exec();
+            actor = await Actor.findById(actorID).exec();
+            sysPrompt = `You are a ${actor.profile.age}-year old ${actor.profile.gender} social media user on the internet whose biography is ${actor.profile.bio}.`;
+            console.log(sysPrompt)
+        }
+        catch (err) {
+            console.log("There was an error fetching your actor");
+        }
+    }
     return groq.chat.completions.create({
         // remove hard-coded system prompt for "actor" personality
         messages: [
@@ -119,7 +145,7 @@ async function generateReply(postText, comment) {
             },
             {
                 role: "user",
-                content: comment
+                content: postComments[0].body,
             }
         ],
         model: "llama3-8b-8192",
@@ -144,17 +170,6 @@ async function generateComment(postText) {
     });
 }
 
-function timeStringToNum(v) {
-    var timeParts = v.split(":");
-    if (timeParts[0] == "-0")
-        // -0:XX
-        return -1 * parseInt(((timeParts[0] * (60000 * 60)) + (timeParts[1] * 60000)), 10);
-    else if (timeParts[0].startsWith('-'))
-        //-X:XX
-        return parseInt(((timeParts[0] * (60000 * 60)) + (-1 * (timeParts[1] * 60000))), 10);
-    else
-        return parseInt(((timeParts[0] * (60000 * 60)) + (timeParts[1] * 60000)), 10);
-};
 
 /*
  * Post /post/new
@@ -192,6 +207,7 @@ exports.newPost = async (req, res, next) => {
                     actor: dummy,
                     notificationType: 'reply',
                     time: timeStringToNum("0:03"),
+                    userPost: true,
                     userPostID: post.postID,
                     replyBody: AIResponse,
                     class: "",
@@ -274,6 +290,55 @@ exports.postUpdateFeedAction = async (req, res, next) => {
                 flagged: false,
             }
             user.feedAction[feedIndex].comments.push(cat);
+            // update script object corresponding to the post with ai-generated comment
+            // find the actor for the original post
+            const post = await Script.findOne({ _id: req.body.postID })
+                .populate('actor')
+                .populate('comments')
+                .exec();
+            const AIActor = post.actor;
+            // TODO: get comments section to pass to AI
+            let comments = post.comments;
+            // for now, only pass user comments:
+            let commentThread = [];
+            commentThread.push(cat);
+            const AIResponse = await getResponse(AIActor, post.body, commentThread);
+            const new_reply = {
+                commentID: comments.length,
+                body: `@${user.username} ` + AIResponse,
+                likes: 0,
+                actor: AIActor,
+                time: cat.relativeTime + 2, // TODO: remove hard-coded value
+                class: "",
+                new_comment: false,
+                liked: false,
+            }
+            comments.push(new_reply);
+            try {
+                post.save();
+            } catch (err) {
+                console.log(err);
+                next(err);
+            }
+            // create a new notification object corresponding to the post
+            const notifdetails = {
+                key: 'reply_reply',
+                actor: AIActor,
+                notificationType: 'reply',
+                userReplyID: user.numComments,
+                time: timeStringToNum("0:01"),
+                postID: post._id,
+                replyBody: AIResponse,
+                class: "",
+
+            }
+            const newnotif = new Notification(notifdetails);
+            try {
+                await newnotif.save();
+            } catch (err) {
+                console.log(err);
+                next(err);
+            }
         }
         // User interacted with a comment on the post.
         else if (req.body.commentID) {

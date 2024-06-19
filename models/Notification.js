@@ -8,6 +8,7 @@ const notificationSchema = new mongoose.Schema({
 
     userPostID: Number, // Indicates which user post this action responds to (0,1,2....n)
     userReplyID: Number, // Indicates which user reply this action responds to (0,1,2....n)
+    postID: { type: Schema.ObjectId, ref: 'Script' }, // storing postID for notifications on posts that are not the user's
     replyBody: { type: String, default: '', trim: true }, // Text(body) of the actor's reply
 
     class: String, // For experimental use (If blank/null, this notification is shown to all users. If defined, this notification is shown only to users with the same value for their experimental condition)
