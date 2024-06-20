@@ -50,22 +50,23 @@
               //- Else this is a normal comment from the script
               else
                 if comment.visible
-                  .comment(commentID=comment.commentID)
-                    a.avatar(href='/user/'+comment.actor.username)
-                      img(src='/public/picture.svg', data-src="/profile_pictures/"+comment.actor.profile.picture)
-                    .content
-                      a.author(href='/user/'+comment.actor.username)=comment.actor.profile.name
-                      .metadata
-                        span.date=(comment.absTime.getTime())
-                        .rating
-                          i.heart.icon(class=comment.liked ? "red" : null)
-                          span.num=comment.likes+(comment.liked ? 1 : 0)
-                          |  Likes
-                      .text=comment.body
-                      .actions
-                        a.like.comment(class=comment.liked ? "red" : null) !{comment.liked ? "Unlike" : "Like"}
-                        a.flag.comment Flag
-                        a.reply.comment(data-username=comment.actor.username) Reply
+                  if comment.actor 
+                    .comment(commentID=comment.commentID)
+                      a.avatar(href='/user/'+comment.actor.username)
+                        img(src='/public/picture.svg', data-src="/profile_pictures/"+comment.actor.profile.picture)
+                      .content
+                        a.author(href='/user/'+comment.actor.username)=comment.actor.profile.name
+                        .metadata
+                          span.date=(comment.absTime.getTime())
+                          .rating
+                            i.heart.icon(class=comment.liked ? "red" : null)
+                            span.num=comment.likes+(comment.liked ? 1 : 0)
+                            |  Likes
+                        .text=comment.body
+                        .actions
+                          a.like.comment(class=comment.liked ? "red" : null) !{comment.liked ? "Unlike" : "Like"}
+                          a.flag.comment Flag
+                          a.reply.comment(data-username=comment.actor.username) Reply
   .extra.content
     .ui.fluid.left.labeled.right.icon.input
       .ui.label

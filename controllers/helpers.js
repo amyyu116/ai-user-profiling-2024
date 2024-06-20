@@ -75,8 +75,10 @@ exports.getFeed = function (user_posts, script_feed, user, order, removeFlaggedC
             script_feed[0].comments = script_feed[0].comments.filter(comment => !comment.class || comment.class == user.experimentalCondition);
 
             // Filter comments to include only past simulated comments, not future simulated comments.
-            script_feed[0].comments = script_feed[0].comments.filter(comment => user.createdAt.getTime() + comment.time < Date.now());
 
+            script_feed[0].comments = script_feed[0].comments.filter(comment => user.createdAt.getTime() + comment.time < Date.now());
+            script_feed[0].comments = script_feed[0].comments.filter(comment => !comment.userID || comment.userID.equals(user._id));
+            console.log(user);
             // Check if the user has interacted with this post by checking if a user.feedAction.post value matches this script_feed[0]'s _id. 
             // If the user has interacted with this post, add the user's interactions to the post.
             const feedIndex = _.findIndex(user.feedAction, function (o) {
@@ -149,14 +151,6 @@ exports.getFeed = function (user_posts, script_feed, user, order, removeFlaggedC
                         }
                     } else {
                         finalfeed.push(script_feed[0]);
-                        // console.log(user.profile.topics);
-                        // console.log(script_feed[0].topics);
-                        // if (feed_filters.length == 0 && user.profile.topics.some(category => script_feed[0].topics.includes(category))) {
-                        //     topicalfeed.push(script_feed[0]);
-                        // }
-                        // else {
-                        //     finalfeed.push(script_feed[0]);
-                        // }
                     }
                     script_feed.splice(0, 1);
                 }
@@ -169,14 +163,6 @@ exports.getFeed = function (user_posts, script_feed, user, order, removeFlaggedC
                         finalfeed_unseen.push(script_feed[0]);
                     } else {
                         finalfeed.push(script_feed[0]);
-                        // console.log(user.profile.topics);
-                        // console.log(script_feed[0].topics);
-                        // if (feed_filters.length == 0 && user.profile.topics.some(category => script_feed[0].topics.includes(category))) {
-                        //     topicalfeed.push(script_feed[0]);
-                        // }
-                        // else {
-
-                        // }
                     }
                     script_feed.splice(0, 1);
                 }

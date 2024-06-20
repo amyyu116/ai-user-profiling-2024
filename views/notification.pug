@@ -31,9 +31,8 @@ block content
                     img.ui.tiny.right.floated.rounded.image(src='/user_post/'+notification.picture)
                     .extra.images
                       each actor in best
-                        if actor.username != "generic-joe"
-                          a.ui.avatar.image(href='/user/'+actor.username, data-tooltip=actor.profile.name, data-position='top center')
-                            img.ui.avatar.image(src='/public/picture.svg', data-src='/profile_pictures/'+actor.profile.picture)
+                        a.ui.avatar.image(href='/user/'+actor.username, data-tooltip=actor.profile.name, data-position='top center')
+                          img.ui.avatar.image(src='/public/picture.svg', data-src='/profile_pictures/'+actor.profile.picture)
                     if best.length == 1
                       .summary
                         a(href='/user/'+best[0].username)=best[0].profile.name

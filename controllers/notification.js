@@ -24,8 +24,23 @@ exports.getNotifications = async (req, res, next) => {
             const currDate = Date.now();
             const lastNotifyVisit = user.lastNotifyVisit; //Absolute Date
             const notification_feed = await Notification.find({
-                $or: [{ userPostID: { $lte: user.numPosts } }, { userReplyID: { $lte: user.numComments } }],
-                class: { "$in": ["", user.experimentalCondition] }
+                $and: [
+                    {
+                        $or: [
+                            { userPostID: { $lte: user.numPosts } },
+                            { userReplyID: { $lte: user.numComments } }
+                        ]
+                    },
+                    {
+                        $or: [
+                            { userID: { $exists: false } },
+                            { userID: user._id }
+                        ]
+                    },
+                    {
+                        class: { "$in": ["", user.experimentalCondition] }
+                    }
+                ]
             })
                 .populate('actor')
                 .sort('-time')
@@ -193,7 +208,7 @@ exports.getNotifications = async (req, res, next) => {
                                     action: 'reply',
                                     postID: notification.postID,
                                     replyBody: notification.replyBody,
-                                    time: notification.time,
+                                    time: time + notification.time,
                                     actor: notification.actor,
                                     unreadNotification: actorPost.time + notification.time > lastNotifyVisit,
                                 };
@@ -209,7 +224,6 @@ exports.getNotifications = async (req, res, next) => {
             final_notify = final_notify.filter((notif) => notif.action !== 'reply_reply');
             final_notify = final_notify.filter((notif) => notif.action !== 'reply_read');
             final_notify = final_notify.filter((notif) => notif.action !== 'read');
-            console.log(final_notify);
             const userPosts = user.getPosts().slice(0) || [];
 
             const repliesOnActorPosts = user.feedAction

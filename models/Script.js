@@ -19,7 +19,7 @@ const scriptSchema = new mongoose.Schema({
         likes: Number, // Indicates the number of likes on the comment (randomly assigned in populate.js)
         actor: { type: Schema.ObjectId, ref: 'Actor' }, // Actor of comment
         time: Number, // Indicates when the comment was created relative to how much time has passed since the user created their account, in milliseconds
-
+        userID: { type: Schema.ObjectId, ref: 'User' }, // check for uniqueness of user/if comment has been dynamically generated
         class: String, // For experimental use (If blank/null, this comment is shown to all users. If defined, this comment is shown only to users with the same value for their experimental condition)
 
         new_comment: { type: Boolean, default: false }, // T/F; indicates if the comment is by the user

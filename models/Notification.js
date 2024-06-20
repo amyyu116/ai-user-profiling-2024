@@ -5,7 +5,7 @@ const notificationSchema = new mongoose.Schema({
     actor: { type: Schema.ObjectId, ref: 'Actor' }, // Indicates which Actor does the action
     notificationType: String, // 3 types of action/notifications: 'like', 'read', 'reply'
     time: Number, // Indicates when the action occurs relative to the time of the user's comment or post, in milliseconds
-
+    userID: { type: Schema.ObjectId, ref: 'Actor' },
     userPostID: Number, // Indicates which user post this action responds to (0,1,2....n)
     userReplyID: Number, // Indicates which user reply this action responds to (0,1,2....n)
     postID: { type: Schema.ObjectId, ref: 'Script' }, // storing postID for notifications on posts that are not the user's

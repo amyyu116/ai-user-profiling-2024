@@ -206,6 +206,7 @@ exports.newPost = async (req, res, next) => {
                 const notifdetails = {
                     actor: dummy,
                     notificationType: 'reply',
+                    userID: user._id,
                     time: timeStringToNum("0:03"),
                     userPost: true,
                     userPostID: post.postID,
@@ -223,7 +224,13 @@ exports.newPost = async (req, res, next) => {
             }
 
             // Find any Actor replies (comments) that go along with this post
-            const actor_replies = await Notification.find()
+            // $or: [{ userID: { $exists: false } }, { userID: user._id }],
+            const actor_replies = await Notification.find({
+                $or: [
+                    { userID: { $exists: false } },
+                    { userID: user._id }
+                ]
+            })
                 .where('userPostID').equals(post.postID)
                 .where('notificationType').equals('reply')
                 .populate('actor').exec();
@@ -308,6 +315,7 @@ exports.postUpdateFeedAction = async (req, res, next) => {
                 body: `@${user.username} ` + AIResponse,
                 likes: 0,
                 actor: AIActor,
+                userID: user._id,
                 time: cat.relativeTime + 2, // TODO: remove hard-coded value
                 class: "",
                 new_comment: false,
@@ -325,6 +333,7 @@ exports.postUpdateFeedAction = async (req, res, next) => {
                 key: 'reply_reply',
                 actor: AIActor,
                 notificationType: 'reply',
+                userID: user._id,
                 userReplyID: user.numComments,
                 time: timeStringToNum("0:01"),
                 postID: post._id,
