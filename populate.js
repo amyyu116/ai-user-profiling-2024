@@ -129,7 +129,7 @@ async function doPopulate() {
                         name: actor_raw.name,
                         gender: actor_raw.gender,
                         age: actor_raw.age,
-                        location: actor_raw.location,
+                        location: actor_raw.location || '',
                         bio: actor_raw.bio,
                         picture: actor_raw.picture
                     },
@@ -141,6 +141,8 @@ async function doPopulate() {
                     await actor.save();
                 } catch (err) {
                     console.log(color_error, "ERROR: Something went wrong with saving actor in database");
+                    console.log(actor);
+                    console.log(err)
                     next(err);
                 }
             },

@@ -78,7 +78,6 @@ exports.getFeed = function (user_posts, script_feed, user, order, removeFlaggedC
 
             script_feed[0].comments = script_feed[0].comments.filter(comment => user.createdAt.getTime() + comment.time < Date.now());
             script_feed[0].comments = script_feed[0].comments.filter(comment => !comment.userID || comment.userID.equals(user._id));
-            console.log(user);
             // Check if the user has interacted with this post by checking if a user.feedAction.post value matches this script_feed[0]'s _id. 
             // If the user has interacted with this post, add the user's interactions to the post.
             const feedIndex = _.findIndex(user.feedAction, function (o) {

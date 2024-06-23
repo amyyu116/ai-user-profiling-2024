@@ -18,7 +18,7 @@ exports.getScript = async (req, res, next) => {
         const time_now = Date.now(); // Current date.
         const time_diff = time_now - req.user.createdAt; // Time difference between now and user account creation, in milliseconds.
         const time_limit = time_diff - one_day; // Date in milliseconds 24 hours ago from now. This is used later to show posts only in the past 24 hours.
-
+        const offset = 0;
         const user = await User.findById(req.user.id)
             .populate('posts.comments.actor')
             .exec();
@@ -47,26 +47,29 @@ exports.getScript = async (req, res, next) => {
         let feed_filter = user.profile.topics;
 
         let script_feed = await Script.find({
-            class: { "$in": ["", user.experimentalCondition] },
             topics: { "$in": feed_filter }
         })
             .where('time').lte(time_diff).gte(time_limit)
+            .skip(offset)
             .sort('-time')
+            .limit(500)
             .populate('actor')
             .populate('comments.actor')
             .exec();
-
-
-        let additional_posts = await Script.find({
-            class: { "$in": ["", user.experimentalCondition] },
-            topics: { "$nin": feed_filter } // Excluding posts with topics already in the feed
-        })
-            .where('time').lte(time_diff).gte(time_limit)
-            .sort('-time')
-            .populate('actor')
-            .populate('comments.actor')
-            .exec();
-
+        console.log(script_feed);
+        let additional_posts = [];
+        if (script_feed.length <= 100) {
+            additional_posts = await Script.find({
+                class: { "$in": ["", user.experimentalCondition] },
+                topics: { "$nin": feed_filter } // Excluding posts with topics already in the feed
+            })
+                .where('time').lte(time_diff).gte(time_limit)
+                .sort('-time')
+                .populate('actor')
+                .populate('comments.actor')
+                .limit(500)
+                .exec();
+        }
         script_feed = script_feed.concat(additional_posts);
         // Array of any user-made posts within the past 24 hours, sorted by time they were created.
         let user_posts = user.getPostInPeriod(time_limit, time_diff);
@@ -103,30 +106,27 @@ function timeStringToNum(v) {
 
 const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
-async function getResponse(postText, actorID = null, comments = null) {
+async function getResponse(post, actorID = null, comments = null) {
     let response = "You should not be seeing this!";
     if (comments) {
-        // check if responding to reply chain
-        chatCompletion = await generateReply(actorID, postText, comments);
+
+        chatCompletion = await generateReply(post, actorID, comments);
         response = chatCompletion.choices[0].message.content;
     } else {
-        // generating response to new, user-made post (a.k.a., no existing comments)
-        chatCompletion = await generateComment(postText);
+        chatCompletion = await generateComment(post);
         response = chatCompletion.choices[0].message.content;
     }
     return response;
 }
 
-
-async function generateReply(postText, actorID = null, postComments = null) {
-
+// response to comment chains
+async function generateReply(post, actorID = null, postComments = null) {
     let sysPrompt = "You are a young 21-year old male social media user on the internet.";
     if (actorID) {
         try {
             let actor = await Actor.findOne({ id: actorID }).exec();
             actor = await Actor.findById(actorID).exec();
             sysPrompt = `You are a ${actor.profile.age}-year old ${actor.profile.gender} social media user on the internet whose biography is ${actor.profile.bio}.`;
-            console.log(sysPrompt)
         }
         catch (err) {
             console.log("There was an error fetching your actor");
@@ -141,7 +141,7 @@ async function generateReply(postText, actorID = null, postComments = null) {
             },
             {
                 role: "assistant",
-                content: postText,
+                content: post.body,
             },
             {
                 role: "user",
@@ -152,8 +152,20 @@ async function generateReply(postText, actorID = null, postComments = null) {
     });
 }
 
-async function generateComment(postText) {
+// generating response to new, user-made post (a.k.a., no existing comments)
+async function generateComment(post, actorID) {
     const sysPrompt = "You are a young 21-year old male social media user on the internet.";
+    if (actorID) {
+        try {
+            let actor = await Actor.findOne({ id: actorID }).exec();
+            actor = await Actor.findById(actorID).exec();
+            sysPrompt = `You are a ${actor.profile.age}-year old ${actor.profile.gender} social media user on the internet whose biography is ${actor.profile.bio}. You are replying to a user's post.`;
+        }
+        catch (err) {
+            console.log("There was an error fetching your actor");
+        }
+    }
+
     return groq.chat.completions.create({
         // remove hard-coded system prompt for "actor" personalities
         messages: [
@@ -163,7 +175,7 @@ async function generateComment(postText) {
             },
             {
                 role: "user",
-                content: postText
+                content: post.body
             }
         ],
         model: "llama3-8b-8192",
@@ -200,14 +212,13 @@ exports.newPost = async (req, res, next) => {
             // Generate a dynamic response via AI.
 
             if (req.body.body) {
-                AIResponse = await getResponse(post.body);
-                // use the dummy actor we generated
                 const dummy = await Actor.findOne({ username: "undefined" }).exec();
+                AIResponse = await getResponse(post, dummy);
                 const notifdetails = {
                     actor: dummy,
                     notificationType: 'reply',
                     userID: user._id,
-                    time: timeStringToNum("0:03"),
+                    time: timeStringToNum("0:02"),
                     userPost: true,
                     userPostID: post.postID,
                     replyBody: AIResponse,

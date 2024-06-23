@@ -104,7 +104,9 @@ exports.getNotifications = async (req, res, next) => {
                                 //Update notification actor profile
                                 //if generic-joe, append. else, shift to the front of the line.
                                 if (notification.notificationType == "read" && notification.actor.username == "generic-joe") {
-                                    continue
+                                    final_notify[notifyIndex].actors.push(notification.actor);
+                                } else {
+                                    final_notify[notifyIndex].actors.unshift(notification.actor);
                                 }
                                 //Update notification time and read/unread classification
                                 if ((userPost.absTime.getTime() + notification.time) > final_notify[notifyIndex].time) {
@@ -165,14 +167,16 @@ exports.getNotifications = async (req, res, next) => {
                                 tmp.numLikes = 1;
                             }
                             notifyIndex = final_notify.push(tmp) - 1;
-                        } else {
+                        } else if (notification.notificationType != 'reply') {
                             //Update notification like count.
                             if (notification.notificationType == 'like') {
                                 final_notify[notifyIndex].numLikes += 1;
                             }
                             // let's avoid some spam
                             if (notification.notificationType == "read" && notification.actor.username == "generic-joe") {
-                                continue
+                                final_notify[notifyIndex].actors.push(notification.actor);
+                            } else {
+                                final_notify[notifyIndex].actors.unshift(notification.actor);
                             }
                             //Update notification time and read/unread classification
                             if (time + notification.time > final_notify[notifyIndex].time) {
@@ -225,7 +229,7 @@ exports.getNotifications = async (req, res, next) => {
             final_notify = final_notify.filter((notif) => notif.action !== 'reply_read');
             final_notify = final_notify.filter((notif) => notif.action !== 'read');
             const userPosts = user.getPosts().slice(0) || [];
-
+            console.log(final_notify)
             const repliesOnActorPosts = user.feedAction
                 .filter(post => (post.comments.filter(comment => comment.new_comment == true).length) > 0)
                 .map(post => post.post); // IDs of actor posts user has commented on.       
