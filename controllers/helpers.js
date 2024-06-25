@@ -58,9 +58,8 @@ exports.getFeed = function (user_posts, script_feed, user, order, removeFlaggedC
                 return a.relativeTime - b.relativeTime;
             });
             // toggle visibility based on time
-            new_post.comments.forEach(comment => {
-                comment.visible = comment.absTime < Date.now();
-            });
+            user_posts[0].comments = user_posts[0].comments.filter(comment => comment.absTime < Date.now());
+
             // If the user post was made within the last 10 minutes, it should be appended to the top of the final feed. So, push it to new_user_posts.
             if ((Date.now() - user_posts[0].absTime) < 600000) {
                 new_user_posts.push(new_post);

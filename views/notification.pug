@@ -28,7 +28,7 @@ block content
                   .label
                     i.large.unhide.icon
                   .content
-                    img.ui.tiny.right.floated.rounded.image(src='/user_post/'+notification.picture)
+                    //- img.ui.tiny.right.floated.rounded.image(src='/user_post/'+notification.picture)
                     .extra.images
                       each actor in best
                         a.ui.avatar.image(href='/user/'+actor.username, data-tooltip=actor.profile.name, data-position='top center')
@@ -51,7 +51,7 @@ block content
                   .label
                     i.large.like.icon
                   .content
-                    img.ui.tiny.right.floated.rounded.image(src='/user_post/'+notification.picture)
+                    //- img.ui.tiny.right.floated.rounded.image(src='/user_post/'+notification.picture)
                     .extra.images
                       each actor in best
                         a.ui.avatar.image(href='/user/'+actor.username, data-tooltip=actor.profile.name, data-position='bottom center')                       

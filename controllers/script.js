@@ -41,6 +41,8 @@ exports.getScript = async (req, res, next) => {
         const current_day = Math.floor(time_diff / one_day);
         if (current_day < process.env.NUM_DAYS) {
             user.study_days[current_day] += 1;
+            await user.save();
+
         }
 
         // Array of actor posts that match the user's experimental condition, within the past 24 hours, sorted by descending time. 
@@ -80,7 +82,6 @@ exports.getScript = async (req, res, next) => {
         // Get the newsfeed and render it.
         const finalfeed = helpers.getFeed(user_posts, script_feed, user, process.env.FEED_ORDER, true, true, user.profile.topics);
         console.log("Script Size is now: " + finalfeed.length);
-        await user.save();
         res.render('script', { script: finalfeed, showNewPostIcon: true });
     } catch (err) {
         next(err);
@@ -109,7 +110,6 @@ const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
 async function getResponse(post, actorID = null, comments = null) {
     let response = "You should not be seeing this!";
     if (comments) {
-
         chatCompletion = await generateReply(post, actorID, comments);
         response = chatCompletion.choices[0].message.content;
     } else {
@@ -120,7 +120,10 @@ async function getResponse(post, actorID = null, comments = null) {
 }
 
 // response to comment chains
-async function generateReply(post, actorID = null, postComments = null) {
+async function generateReply(post, actorID = null) {
+    // fetch comments associated with post
+
+
     let sysPrompt = "You are a young 21-year old male social media user on the internet.";
     if (actorID) {
         try {
@@ -320,7 +323,7 @@ exports.postUpdateFeedAction = async (req, res, next) => {
             // for now, only pass user comments:
             let commentThread = [];
             commentThread.push(cat);
-            const AIResponse = await getResponse(AIActor, post.body, commentThread);
+            const AIResponse = await getResponse(post, AIActor, commentThread);
             const new_reply = {
                 commentID: comments.length,
                 body: `@${user.username} ` + AIResponse,

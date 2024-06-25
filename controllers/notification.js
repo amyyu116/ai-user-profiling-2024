@@ -222,6 +222,8 @@ exports.getNotifications = async (req, res, next) => {
                     }
                 }
             }
+            await user.save();
+
             final_notify.sort(function (a, b) {
                 return b.time - a.time;
             });
@@ -244,7 +246,6 @@ exports.getNotifications = async (req, res, next) => {
             if (!req.query.bell) {
                 user.lastNotifyVisit = currDate;
             }
-            await user.save();
 
             const newNotificationCount = final_notify.filter(notification => notification.unreadNotification == true).length;
             if (req.query.bell) {
