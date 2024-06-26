@@ -172,7 +172,6 @@ exports.getNotifications = async (req, res, next) => {
                             if (notification.notificationType == 'like') {
                                 final_notify[notifyIndex].numLikes += 1;
                             }
-                            // let's avoid some spam
                             if (notification.notificationType == "read" && notification.actor.username == "generic-joe") {
                                 final_notify[notifyIndex].actors.push(notification.actor);
                             } else {
@@ -198,29 +197,30 @@ exports.getNotifications = async (req, res, next) => {
                             }
                         }
                         if (notification.notificationType == 'reply') {
-                            if (postType == "user") {
-                                // TODO: add response to user-made posts
-                            } else {
-                                // const postIndex = _.findIndex(user.posts, function (o) { return o.postID == userPostID; });
-                                // user.feedAction[postIndex].comments[commentIndex].likes = final_notify[notifyIndex].numLikes;
-                                const replyKey = "actorReply_" + notification.userReplyID;
-                                const actorPost = await Script.find({
-                                    _id: notification.postID,
-                                }).exec();
-                                const reply_tmp = {
-                                    key: replyKey,
-                                    action: 'reply',
-                                    postID: notification.postID,
-                                    replyBody: notification.replyBody,
-                                    time: time + notification.time,
-                                    actor: notification.actor,
-                                    unreadNotification: actorPost.time + notification.time > lastNotifyVisit,
-                                };
-                                final_notify.push(reply_tmp);
-                            }
+                            // if (postType == "user") {
+                            //     // TODO: add response to user-made posts
+                            // } else {
+                            const replyKey = "actorReply_" + notification.userReplyID;
+                            const actorPost = await Script.find({
+                                _id: notification.postID,
+                            }).exec();
+                            const reply_tmp = {
+                                key: replyKey,
+                                action: 'reply',
+                                postID: notification.postID,
+                                replyBody: notification.replyBody,
+                                time: time + notification.time,
+                                actor: notification.actor,
+                                unreadNotification: actorPost.time + notification.time > lastNotifyVisit,
+                            };
+                            final_notify.push(reply_tmp);
+                            // }
                         }
                     }
                 }
+            }
+            if (!req.query.bell) {
+                user.lastNotifyVisit = currDate;
             }
             await user.save();
 
@@ -231,7 +231,6 @@ exports.getNotifications = async (req, res, next) => {
             final_notify = final_notify.filter((notif) => notif.action !== 'reply_read');
             final_notify = final_notify.filter((notif) => notif.action !== 'read');
             const userPosts = user.getPosts().slice(0) || [];
-            console.log(final_notify)
             const repliesOnActorPosts = user.feedAction
                 .filter(post => (post.comments.filter(comment => comment.new_comment == true).length) > 0)
                 .map(post => post.post); // IDs of actor posts user has commented on.       
