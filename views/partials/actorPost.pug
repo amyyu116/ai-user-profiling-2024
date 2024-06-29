@@ -13,9 +13,11 @@
     a(href='/user/'+val.actor.username)     
       img.ui.avatar.image(src='/public/picture.svg', data-src="/profile_pictures/"+val.actor.profile.picture)
       span=val.actor.profile.name
-  
+  - function formatBody(body) {
+  -   return body.replace(/\n/g, '<br>');
+  - }
   .content
-    .description=val.body
+    .description!= formatBody(val.body)
     .myTimer.hidden 0
   if val.picture
     .img.post.image

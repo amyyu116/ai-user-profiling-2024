@@ -8,7 +8,7 @@ const helpers = require('./helpers');
  * If the current user is an admin, retrieve all the actors from the database and render them to the page '../views/actors'.
  * If the current user is not an admin, redirect the user to the home page. 
  */
-exports.getActors = async(req, res) => {
+exports.getActors = async (req, res) => {
     if (!req.user.isAdmin) {
         res.redirect('/');
     } else {
@@ -28,7 +28,7 @@ exports.getActors = async(req, res) => {
  * Check if the current user has blocked or reported the actor.
  * Render the actor's profile page along with the relevant data.
  */
-exports.getActor = async(req, res, next) => {
+exports.getActor = async (req, res, next) => {
     const time_diff = Date.now() - req.user.createdAt;
     try {
         const user = await User.findById(req.user.id).exec();
@@ -44,6 +44,7 @@ exports.getActor = async(req, res, next) => {
             .sort('-time')
             .populate('actor')
             .populate('comments.actor')
+            .limit(500)
             .exec();
 
         const finalfeed = helpers.getFeed([], script_feed, user, 'CHRONOLOGICAL', true, false);
@@ -58,7 +59,7 @@ exports.getActor = async(req, res, next) => {
  * POST /user
  * Handle post requests to block, unblock, report, follow, and unfollow an actor.
  */
-exports.postBlockReportOrFollow = async(req, res, next) => {
+exports.postBlockReportOrFollow = async (req, res, next) => {
     const currDate = Date.now();
     try {
         const user = await User.findById(req.user.id).exec();

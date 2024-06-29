@@ -184,16 +184,19 @@ async function doPopulate() {
                         await script.save();
                     } catch (err) {
                         console.log(color_error, "ERROR: Something went wrong with saving post in database");
+                        console.log(err)
                         next(err);
                     }
                 } else { //Else no actor found
                     console.log(color_error, "ERROR: Actor not found in database");
+                    console.log(new_post);
                     callback();
                 };
             },
                 function (err) {
                     if (err) {
                         console.log(color_error, "ERROR: Something went wrong with saving posts in database");
+                        console.log(err);
                         callback(err);
                     }
                     // Return response

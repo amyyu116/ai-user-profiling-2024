@@ -2,7 +2,7 @@ const mongoose = require('mongoose');
 const Schema = mongoose.Schema;
 
 const scriptSchema = new mongoose.Schema({
-    postID: Number, // ID of the post (0, 1, 2, 3, ... )
+    postID: String, // ID of the post (0, 1, 2, 3, ... )
     body: { type: String, default: '', trim: true }, // Text (body) of post
     picture: { type: String, default: '' }, // Picture (file path) for post
     likes: Number, // Indicates the number of likes on the post (randomly assigned in populate.js)
@@ -14,7 +14,7 @@ const scriptSchema = new mongoose.Schema({
     // Sorted by least recent --> most recent
     // List of actor comments on the post
     comments: [new Schema({
-        commentID: Number, // ID of the comment (0, 1, 2, 3, ... )
+        commentID: String, // ID of the comment (0, 1, 2, 3, ... )
         body: { type: String, default: '', trim: true }, // Text (body) of comment
         likes: Number, // Indicates the number of likes on the comment (randomly assigned in populate.js)
         actor: { type: Schema.ObjectId, ref: 'Actor' }, // Actor of comment

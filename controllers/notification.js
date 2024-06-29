@@ -211,7 +211,7 @@ exports.getNotifications = async (req, res, next) => {
                                 replyBody: notification.replyBody,
                                 time: time + notification.time,
                                 actor: notification.actor,
-                                unreadNotification: actorPost.time + notification.time > lastNotifyVisit,
+                                unreadNotification: time + notification.time > lastNotifyVisit,
                             };
                             final_notify.push(reply_tmp);
                             // }
@@ -247,6 +247,7 @@ exports.getNotifications = async (req, res, next) => {
             }
 
             const newNotificationCount = final_notify.filter(notification => notification.unreadNotification == true).length;
+            console.log(final_notify);
             if (req.query.bell) {
                 return res.send({ count: newNotificationCount });
             } else {
