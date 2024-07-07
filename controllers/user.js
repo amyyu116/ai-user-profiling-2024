@@ -24,14 +24,15 @@ exports.getLogin = (req, res) => {
  */
 exports.postLogin = (req, res, next) => {
     const validationErrors = [];
-    if (!validator.isEmail(req.body.email)) validationErrors.push({ msg: 'Please enter a valid email address.' });
+    // if (!validator.isEmail(req.body.email)) validationErrors.push({ msg: 'Please enter a valid email address.' });
+    if (validator.isEmpty(req.body.username)) validationErrors.push({ msg: 'Username cannot be blank.' });
     if (validator.isEmpty(req.body.password)) validationErrors.push({ msg: 'Password cannot be blank.' });
 
     if (validationErrors.length) {
         req.flash('errors', validationErrors);
         return res.redirect('/login');
     }
-    req.body.email = validator.normalizeEmail(req.body.email, { gmail_remove_dots: false });
+    // req.body.email = validator.normalizeEmail(req.body.email, { gmail_remove_dots: false });
     passport.authenticate('local', (err, user, info) => {
         const study_length = 86400000 * process.env.NUM_DAYS; // Milliseconds in NUM_DAYS days
         const time_diff = Date.now() - user.createdAt; // Time difference between now and account creation.
@@ -94,21 +95,21 @@ exports.getSignup = (req, res) => {
  */
 exports.postSignup = async (req, res, next) => {
     const validationErrors = [];
-    if (!validator.isEmail(req.body.email)) validationErrors.push({ msg: 'Please enter a valid email address.' });
+    // if (!validator.isEmail(req.body.email)) validationErrors.push({ msg: 'Please enter a valid email address.' });
     if (!validator.isLength(req.body.password, { min: 4 })) validationErrors.push({ msg: 'Password must be at least 4 characters long.' });
     if (validator.escape(req.body.password) !== validator.escape(req.body.confirmPassword)) validationErrors.push({ msg: 'Passwords do not match.' });
     if (validationErrors.length) {
         req.flash('errors', validationErrors);
         return res.redirect('/signup');
     }
-    req.body.email = validator.normalizeEmail(req.body.email, { gmail_remove_dots: false });
+    // req.body.email = validator.normalizeEmail(req.body.email, { gmail_remove_dots: false });
 
     try {
-        const existingUser = await User.findOne({ $or: [{ email: req.body.email }, { mturkID: req.body.mturkID }] }).exec();
-        if (existingUser) {
-            req.flash('errors', { msg: 'An account with that email address or MTurkID already exists.' });
-            return res.redirect('/signup');
-        }
+        // const existingUser = await User.findOne({ $or: [{ email: req.body.email }, { mturkID: req.body.mturkID }] }).exec();
+        // if (existingUser) {
+        //     req.flash('errors', { msg: 'An account with that email address or MTurkID already exists.' });
+        //     return res.redirect('/signup');
+        // }
         /*###############################
         Place Experimental Varibles Here!
         ###############################*/
@@ -119,7 +120,7 @@ exports.postSignup = async (req, res, next) => {
         const surveyLink = process.env.POST_SURVEY ? process.env.POST_SURVEY + req.body.mturkID : "";
         const currDate = Date.now();
         const user = new User({
-            email: req.body.email,
+            // email: req.body.email,
             password: req.body.password,
             mturkID: req.body.mturkID,
             username: req.body.username,
@@ -200,7 +201,7 @@ exports.getMe = async (req, res) => {
     try {
         const user = await User.findById(req.user.id).populate('posts.comments.actor').exec();
         const allPosts = user.getPosts();
-        res.render('me', { posts: allPosts, title: user.profile.name || user.email || user.id });
+        res.render('me', { posts: allPosts, title: user.profile.name || user.username || user.id });
     } catch (err) {
         next(err);
     }
@@ -212,15 +213,12 @@ exports.getMe = async (req, res) => {
  */
 exports.postUpdateProfile = async (req, res, next) => {
     const validationErrors = [];
-    if (!validator.isEmail(req.body.email)) validationErrors.push({ msg: 'Please enter a valid email address.' });
     if (validationErrors.length) {
         req.flash('errors', validationErrors);
         return res.redirect('/account');
     }
-    req.body.email = validator.normalizeEmail(req.body.email, { gmail_remove_dots: false });
     try {
         const user = await User.findById(req.user.id).exec();
-        user.email = req.body.email || '';
         user.profile.name = req.body.name.trim() || '';
         user.profile.location = req.body.location.trim() || '';
         user.profile.bio = req.body.bio.trim() || '';
@@ -235,10 +233,10 @@ exports.postUpdateProfile = async (req, res, next) => {
         req.flash('success', { msg: 'Profile information has been updated.' });
         res.redirect('/account');
     } catch (err) {
-        if (err.code === 11000) {
-            req.flash('errors', { msg: 'The email address you have entered is already associated with an account.' });
-            return res.redirect('/account');
-        }
+        // if (err.code === 11000) {
+        //     req.flash('errors', { msg: 'The email address you have entered is already associated with an account.' });
+        //     return res.redirect('/account');
+        // }
         next(err);
     }
 };

@@ -2,7 +2,7 @@ extends ../ui_layout
 
 block content
   .computer.only.tablet.only.eight.wide.column
-    img.ui.fluid.image(src=process.env.SITE_PICTURE)
+    img.ui.fluid.image(src=process.env.SITE_PICTURE style="padding: 20px; margin-top: 120px;")
   .eight.wide.computer.eight.wide.tablet.sixteen.wide.mobile.column
     .ui.card.fluid(style="padding: 20px; margin-top: 90px;")
       h2.ui.header Sign Up
@@ -14,9 +14,6 @@ block content
         .field
           label(for='mturkID') !{process.env.IDENTIFIER}
           input(type='text', name='mturkID', id='mturkID', placeholder=process.env.IDENTIFIER, required)
-        .field
-          label(for='email') Email (will not be publicly displayed)
-          input(type='email', name='email', id='email', placeholder='Email', required)
         .field
           label(for='password') Password
           input(type='password', name='password', id='password', placeholder='Password', minlength="4", required)

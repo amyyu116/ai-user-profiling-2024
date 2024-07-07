@@ -6,7 +6,6 @@ const dotenv = require('dotenv');
 dotenv.config({ path: '.env' });
 
 const userSchema = new mongoose.Schema({
-    email: { type: String, unique: true },
     password: String,
     username: String,
     active: { type: Boolean, default: true }, // Indicates if the user is still active
@@ -251,10 +250,10 @@ userSchema.methods.gravatar = function gravatar(size) {
     if (!size) {
         size = 200;
     }
-    if (!this.email) {
+    if (!this.username) {
         return `https://gravatar.com/avatar/?s=${size}&d=retro`;
     }
-    const md5 = crypto.createHash('md5').update(this.email).digest('hex');
+    const md5 = crypto.createHash('md5').update(this.username).digest('hex');
     return `https://gravatar.com/avatar/${md5}?s=${size}&d=retro`;
 };
 

@@ -247,7 +247,6 @@ exports.getNotifications = async (req, res, next) => {
             }
 
             const newNotificationCount = final_notify.filter(notification => notification.unreadNotification == true).length;
-            console.log(final_notify);
             if (req.query.bell) {
                 return res.send({ count: newNotificationCount });
             } else {

@@ -17,7 +17,7 @@ block content
         else
           img.ui.avatar.image(src=user.gravatar(60))
       input(type='text', placeholder='Create a post')
-      i.big.photo.link.icon
+      i.big.send.icon
     each val in script
       if val.relativeTime 
         //- This is a User made post
@@ -39,11 +39,11 @@ block content
         input(type='hidden', name='_csrf', value=_csrf)
         .field
           textarea(rows='2', placeholder='Share something with the world!', name='body')
-        .field.image-upload
-          label(for='picinput')
-            .image.content
-              img#imgInp.ui.fluid.image(src='/public/photo-camera.svg')
-          input#picinput(type='file', accept='image/*', name='picinput')
+        //- .field.image-upload
+        //-   label(for='picinput')
+        //-     .image.content
+        //-       img#imgInp.ui.fluid.image(src='/public/photo-camera.svg')
+          //- input#picinput(type='file', accept='image/*', name='picinput')
     .actions
       input.ui.green.button(type='submit', form='postform', value='Submit')
           

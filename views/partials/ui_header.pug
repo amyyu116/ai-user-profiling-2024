@@ -2,7 +2,7 @@
   .ui.borderless.fixed.menu
     .ui.container
       a.item(href= user===undefined ? '/' : (user.consent ? "/": "#"))
-        img.ui.tiny.image(src=process.env.SITE_LOGO, id='logo')
+        img.ui.tiny.image(src=process.env.SITE_LOGO, id='logo', style="height: 38px; width: 40px")
       .right.menu
         if !user
           a.item(href='/login') Log In

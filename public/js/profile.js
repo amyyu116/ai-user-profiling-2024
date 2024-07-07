@@ -30,38 +30,41 @@ $(window).on("load", function () {
 
     function enableSaveBtn() {
         let isFilled = true;
+        console.log("1: ", isFilled);
         // Check Username and MTurkID is not blank
-        $('input[type="text"]').each(function (index) {
+        $('#signup-form input[type="text"]').each(function () {
             if ($(this).val().trim().length === 0) {
+                console.log("2: ", isFilled);
                 isFilled = false;
-                return false;
             }
         })
-
-        if ($('.tags-container .tag-item').length === 0) {
-            isFilled = false;
-        }
-        // Check email is valid
-        if ($('input[type="email"]').is(":invalid")) {
-            isFilled = false;
-        }
+        console.log("3: ", isFilled);
+        // if ($('.tags-container .tag-item').length === 0) {
+        //     isFilled = false;
+        // };
+        console.log("4: ", isFilled);
         // Check TOS is checked
         if (!$('.ui.checkbox').hasClass("checked")) {
             isFilled = false;
         }
+        console.log("5: ", isFilled);
         // Check passwords match and password is longer than 4
         if (isPasswordFilled() && isFilled) {
             $('button.ui.button').addClass("green");
         } else {
             $('button.ui.button').removeClass("green");
         }
+        console.log("6: ", isFilled);
     };
 
     // Sign Up FORM Button: Form validation to make Sign Up button green
-    $('form[id="signup-form"] input[required]').on('input', function () {
+    $('form[id="signup-form"] input').on('input', function () {
         enableSaveBtn();
     });
     $('form[id="signup-form"] input[type="hidden"]').on('change', function () {
+        enableSaveBtn();
+    });
+    $('form[id="signup-form"] input[type="checkbox"]').on('change', function () {
         enableSaveBtn();
     });
 
