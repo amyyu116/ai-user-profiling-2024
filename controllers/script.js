@@ -359,6 +359,7 @@ exports.postUpdateFeedAction = async (req, res, next) => {
                 absTime: req.body.new_comment,
                 liked: false,
                 flagged: false,
+                likes: 0,
             }
             user.feedAction[feedIndex].comments.push(cat);
             // update script object corresponding to the post with ai-generated comment
@@ -530,13 +531,20 @@ exports.postUpdateUserPostFeedAction = async (req, res, next) => {
 
             // Check if user is mentioning anyone 
             let mentioned = cat.body.match(/@\w+/);
-
+            await user.save();
             // If a match is found, make a new comment accordingly
+            let AIActor = null;
             if (mentioned) {
                 mentioned = mentioned[0].substring(1);
-                let AIActor = await Actor.findOne({ username: mentioned });
+                AIActor = await Actor.findOne({ username: mentioned });
                 // Call for a new comment
-                await user.save();
+            } else if (user.posts[feedIndex].comments.length > 1) {
+                const comments = user.posts[feedIndex].comments;
+                if (comments.length > 1) {
+                    AIActor = await Actor.findOne({ _id: comments[comments.length - 2].actor });
+                }
+            }
+            if (AIActor) {
                 const post = user.posts[feedIndex]
                 const AIResponse = await getResponse(post, user, AIActor);
                 const new_reply = {
@@ -558,15 +566,15 @@ exports.postUpdateUserPostFeedAction = async (req, res, next) => {
                     console.log(err);
                     next(err);
                 }
-                // create a new notification object corresponding to the post
                 const notifdetails = {
                     key: 'reply_reply',
                     actor: AIActor,
                     notificationType: 'reply',
                     userID: user._id,
                     userReplyID: user.numComments,
-                    time: timeStringToNum("0:01"),
+                    time: cat.relativeTime - user.posts[feedIndex].relativeTime + timeStringToNum("0:01"),
                     postID: user.posts[feedIndex]._id,
+                    userPostID: user.posts[feedIndex].postID,
                     replyBody: AIResponse,
                     class: "",
 
@@ -579,7 +587,6 @@ exports.postUpdateUserPostFeedAction = async (req, res, next) => {
                     next(err);
                 }
             }
-
         }
         // User interacted with a comment on the post.
         else if (req.body.commentID) {

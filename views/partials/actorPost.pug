@@ -54,7 +54,7 @@
                     i.heart.icon(class=comment.liked ? "red" : null)
                     span.num=comment.likes+(comment.liked ? 1 : 0)
                     |  Likes
-                .text=comment.body
+                .text!=formatBody(comment.body)
                 .actions
                   a.like.comment(class=comment.liked ? "red" : null ) !{comment.liked ? "Unlike" : "Like"}
           //- Else this is a normal comment from the script
