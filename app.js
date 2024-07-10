@@ -26,7 +26,7 @@ fs.readFileAsync = util.promisify(fs.readFile);
  */
 var userpost_options = multer.diskStorage({
     destination: path.join(__dirname, 'uploads/user_post'),
-    filename: function(req, file, cb) {
+    filename: function (req, file, cb) {
         var lastsix = req.user.id.substr(req.user.id.length - 6);
         var prefix = lastsix + Math.random().toString(36).slice(2, 10);
         cb(null, prefix + file.originalname.replace(/[^A-Z0-9]+/ig, "_"));
@@ -34,7 +34,7 @@ var userpost_options = multer.diskStorage({
 });
 var useravatar_options = multer.diskStorage({
     destination: path.join(__dirname, 'uploads/user_avatar'),
-    filename: function(req, file, cb) {
+    filename: function (req, file, cb) {
         var prefix = req.user.id + Math.random().toString(36).slice(2, 10);
         cb(null, prefix + file.originalname.replace(/[^A-Z0-9]+/ig, "_"));
     }
@@ -83,21 +83,21 @@ mongoose.connection.on('error', (err) => {
 const rule1 = new schedule.RecurrenceRule();
 rule1.hour = 4;
 rule1.minute = 30;
-const j = schedule.scheduleJob(rule1, function() {
+const j = schedule.scheduleJob(rule1, function () {
     userController.stillActive();
 });
 
 const rule2 = new schedule.RecurrenceRule();
 rule2.hour = 12;
 rule2.minute = 30;
-const j2 = schedule.scheduleJob(rule2, function() {
+const j2 = schedule.scheduleJob(rule2, function () {
     userController.stillActive();
 });
 
 const rule3 = new schedule.RecurrenceRule();
 rule3.hour = 20;
 rule3.minute = 30;
-const j3 = schedule.scheduleJob(rule3, function() {
+const j3 = schedule.scheduleJob(rule3, function () {
     userController.stillActive();
 });
 
@@ -182,7 +182,7 @@ app.post('/post/new', userpostupload.single('picinput'), scriptController.newPos
 app.post('/pageLog', passportConfig.isAuthenticated, userController.postPageLog);
 app.post('/pageTimes', passportConfig.isAuthenticated, userController.postPageTime);
 
-app.get('/com', function(req, res) {
+app.get('/com', function (req, res) {
     const feed = req.query.feed == "true" ? true : false; //Are we accessing the community rules from the feed?
     res.render('com', {
         title: 'Community Rules',
@@ -190,13 +190,13 @@ app.get('/com', function(req, res) {
     });
 });
 
-app.get('/info', passportConfig.isAuthenticated, function(req, res) {
+app.get('/info', passportConfig.isAuthenticated, function (req, res) {
     res.render('info', {
         title: 'User Docs'
     });
 });
 
-app.get('/tos', function(req, res) { res.render('tos', { title: 'Terms of Service' }); });
+app.get('/tos', function (req, res) { res.render('tos', { title: 'Terms of Service' }); });
 
 app.get('/completed', passportConfig.isAuthenticated, userController.userTestResults);
 
@@ -206,13 +206,19 @@ app.get('/login', userController.getLogin);
 app.post('/login', userController.postLogin);
 app.get('/logout', userController.logout);
 app.get('/forgot', userController.getForgot);
-app.get('/signup', userController.getSignup);
-app.post('/signup', userController.postSignup);
+app.get('/signup', (req, res) => {
+    const prolificId = req.query.prolific_id;
+    userController.getSignup(req, res, prolificId); // Pass the query parameter to your controller function
+});
+app.post('/signup', (req, res) => {
+    const prolificId = req.query.prolific_id;
+    userController.postSignup(req, res, prolificId); // Pass the query parameter to your controller function
+});
 
 app.get('/account', passportConfig.isAuthenticated, userController.getAccount);
 app.post('/account/password', passportConfig.isAuthenticated, userController.postUpdatePassword);
 app.post('/account/profile', passportConfig.isAuthenticated, useravatarupload.single('picinput'), userController.postUpdateProfile);
-app.get('/account/signup_info', passportConfig.isAuthenticated, function(req, res) {
+app.get('/account/signup_info', passportConfig.isAuthenticated, function (req, res) {
     res.render('account/signup_info', {
         title: 'Add Information'
     });
@@ -228,7 +234,7 @@ app.get('/actors', passportConfig.isAuthenticated, actorsController.getActors)
 app.get('/feed', passportConfig.isAuthenticated, scriptController.getScript);
 app.post('/feed', passportConfig.isAuthenticated, scriptController.postUpdateFeedAction);
 app.post('/userPost_feed', passportConfig.isAuthenticated, scriptController.postUpdateUserPostFeedAction);
-app.get('/test', passportConfig.isAuthenticated, function(req, res) {
+app.get('/test', passportConfig.isAuthenticated, function (req, res) {
     res.render('test', {
         title: 'Test'
     })
@@ -240,14 +246,14 @@ app.get('/test', passportConfig.isAuthenticated, function(req, res) {
 app.use(errorHandler());
 
 // Catch 404 and forward to error handler
-app.use(function(req, res, next) {
+app.use(function (req, res, next) {
     var err = new Error('Not Found');
     err.status = 404;
     next(err);
 });
 
 // Error handler
-app.use(function(err, req, res, next) {
+app.use(function (err, req, res, next) {
     // set locals, only providing error in development
     res.locals.message = err.message;
     res.locals.error = req.app.get('env') === 'development' ? err : {};

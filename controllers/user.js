@@ -81,11 +81,14 @@ exports.logout = (req, res) => {
  * Render the signup page.
  */
 exports.getSignup = (req, res) => {
+
+    const prolificId = req.query.prolific_id || '';
     if (req.user) {
         return res.redirect('/');
     }
     res.render('account/signup', {
-        title: 'Create Account'
+        title: 'Create Account',
+        prolificId: prolificId,
     });
 };
 
@@ -105,11 +108,16 @@ exports.postSignup = async (req, res, next) => {
     // req.body.email = validator.normalizeEmail(req.body.email, { gmail_remove_dots: false });
 
     try {
-        // const existingUser = await User.findOne({ $or: [{ email: req.body.email }, { mturkID: req.body.mturkID }] }).exec();
-        // if (existingUser) {
-        //     req.flash('errors', { msg: 'An account with that email address or MTurkID already exists.' });
-        //     return res.redirect('/signup');
-        // }
+        const existingUser = await User.findOne({
+            $or: [
+                { mturkID: req.body.mturkID },
+                { username: req.body.username }
+            ]
+        }).exec();
+        if (existingUser) {
+            req.flash('errors', { msg: 'An account with that Prolific ID already exists.' });
+            return res.redirect('/signup');
+        }
         /*###############################
         Place Experimental Varibles Here!
         ###############################*/

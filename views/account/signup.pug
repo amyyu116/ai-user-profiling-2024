@@ -13,7 +13,7 @@ block content
           input(type='text', name='username', id='username', placeholder='Username', autofocus, required)
         .field
           label(for='mturkID') !{process.env.IDENTIFIER}
-          input(type='text', name='mturkID', id='mturkID', placeholder=process.env.IDENTIFIER, required)
+          input(type='text', name='mturkID', id='mturkID', placeholder=process.env.IDENTIFIER, value=prolificId, required)
         .field
           label(for='password') Password
           input(type='password', name='password', id='password', placeholder='Password', minlength="4", required)
