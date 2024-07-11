@@ -109,7 +109,7 @@ async function getResponse(post, user, actorID = null) {
             let actor = await Actor.findOne({ id: actorID }).exec();
             actor = await Actor.findById(actorID).exec();
             sysPrompt = `You are a ${actor.profile.age}-year old ${actor.profile.gender} on a social media platform. ${actor.profile.name ? `On your profile, your name is "${actor.profile.name}".` : ''}.
-            ${actor.profile.bio ? `your biography is "${actor.profile.bio}".` : ''} ${actor.profile.location ? `and your location is "${actor.profile.location}".` : ''}`;
+            ${actor.profile.bio ? `your biography is "${actor.profile.bio}".` : ''} ${actor.profile.location ? `and your location is "${actor.profile.location}". Keep your messages within 1-2 sentences and avoid hashtags` : ''}`;
             // fetch comments associated with post
             let comments = [];
             if (post.comments) {
@@ -150,7 +150,7 @@ async function getResponse(post, user, actorID = null) {
             });
             let response = "You should not be seeing this!";
             // check if post is new and has comments
-            if (post.comments.length == 0) {
+            if (post.comments.length == 0 && !post.actor) {
                 chatCompletion = await generateComment(post, sysPrompt);
             } else {
                 chatCompletion = await generateReply(post, comments, sysPrompt);
@@ -172,7 +172,6 @@ async function getResponse(post, user, actorID = null) {
 
 // response to comment chains
 async function generateReply(post, comments, sysPrompt = '') {
-    sysPrompt += 'Try to keep responses to within 1-3 sentences.';
     let promptMessages = [
         {
             role: "system",
@@ -212,6 +211,7 @@ async function generateReply(post, comments, sysPrompt = '') {
         };
         promptMessages.push(newMessage);
     }
+    console.log(promptMessages);
     console.log(promptMessages);
     return groq.chat.completions.create({
         messages: promptMessages,
