@@ -172,6 +172,7 @@ async function getResponse(post, user, actorID = null) {
 
 // response to comment chains
 async function generateReply(post, comments, sysPrompt = '') {
+    sysPrompt += 'Try to keep responses to within 1-3 sentences.';
     let promptMessages = [
         {
             role: "system",
