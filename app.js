@@ -69,9 +69,18 @@ const app = express();
 /**
  * Connect to MongoDB.
  */
-mongoose.connect(process.env.MONGODB_URI);
+
+const options = {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+    maxPoolSize: 100, // Adjust pool size as needed
+    serverSelectionTimeoutMS: 5000, // 5 seconds timeout
+};
+
+mongoose.connect(process.env.MONGODB_URI, options);
 mongoose.connection.on('error', (err) => {
     console.error(err);
+
     console.log('%s MongoDB connection error. Please make sure MongoDB is running.');
     process.exit();
 });
@@ -271,5 +280,3 @@ app.listen(app.get('port'), () => {
     console.log('  Press CTRL-C to stop\n');
 });
 module.exports = app;
-
-mongoose.connection.close()
