@@ -271,3 +271,5 @@ app.listen(app.get('port'), () => {
     console.log('  Press CTRL-C to stop\n');
 });
 module.exports = app;
+
+mongoose.connection.close()
