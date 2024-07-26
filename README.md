@@ -7,4 +7,4 @@ Software was developed using the Truman Platform 2023 codebase. We implemented a
 This project and repository has been forked and edited from the original [Truman Platform 2023 codebase](https://github.com/cornellsml/truman_2023).
 
 ## Acknowledgments 
-This work was supported by the NSF grant #CNS-2349663.  Any opinions, findings, and conclusions or recommendations expressed in this work are those of the author(s) and do not necessarily reflect the views of the NSF. Software development occurred under the supervision of Dr. Steven Wilson and Dr. Huirong Fu. 
+This work was supported by the NSF grant #CNS-2349663.  Any opinions, findings, and conclusions or recommendations expressed in this work are those of the author(s) and do not necessarily reflect the views of the NSF. Software development occurred under the supervision of Dr. Steven Wilson and Dr. Huirong Fu. Credits to Alexander Simon for the synthetic user profile content.
